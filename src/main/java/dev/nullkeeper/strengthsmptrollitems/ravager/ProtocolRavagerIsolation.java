@@ -67,6 +67,13 @@ public final class ProtocolRavagerIsolation implements AutoCloseable {
             public void onPacketSending(PacketEvent event) {
                 try {
                     Entity entity = event.getPacket().getEntityModifier(event).readSafely(0);
+                    if (entity == null) {
+                        failClosed(
+                                event,
+                                "outbound entity sound",
+                                new IllegalStateException("ProtocolLib returned no sound entity"));
+                        return;
+                    }
                     if (observationDenied(event.getPlayer(), entity)) {
                         event.setCancelled(true);
                     }
@@ -86,9 +93,18 @@ public final class ProtocolRavagerIsolation implements AutoCloseable {
             public void onPacketReceiving(PacketEvent event) {
                 try {
                     Integer entityId = event.getPacket().getIntegers().readSafely(0);
-                    Entity entity = entityId == null
-                            ? null
-                            : manager.getEntityFromID(event.getPlayer().getWorld(), entityId);
+                    if (entityId == null) {
+                        failClosed(
+                                event,
+                                "inbound entity interaction",
+                                new IllegalStateException("ProtocolLib returned no interaction entity ID"));
+                        return;
+                    }
+                    Entity entity = manager.getEntityFromID(event.getPlayer().getWorld(), entityId);
+                    if (entity == null) {
+                        event.setCancelled(true);
+                        return;
+                    }
                     if (interactionDenied(event.getPlayer(), entity)) {
                         event.setCancelled(true);
                     }

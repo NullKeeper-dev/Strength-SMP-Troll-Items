@@ -57,13 +57,9 @@ public final class SpookyCrossbowListener implements Listener {
             return;
         }
         Player shooter = Bukkit.getPlayer(shooterId);
-        if (shooter == null) {
-            return;
-        }
-
         PluginConfig config = configSource.get();
-        SpawnResult result = spawner.spawn(shooter, target, config.ravagers());
-        if (result.spawned() < result.requested()) {
+        SpawnResult result = spawner.spawn(shooterId, target, config.ravagers());
+        if (shooter != null && result.spawned() < result.requested()) {
             shooter.sendMessage(LegacyText.format(
                     config.messages().partialRavagerSpawn(),
                     Map.of(

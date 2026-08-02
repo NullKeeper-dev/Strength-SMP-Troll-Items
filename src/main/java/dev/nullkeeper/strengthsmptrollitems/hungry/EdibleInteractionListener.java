@@ -14,6 +14,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.Plugin;
@@ -40,9 +41,10 @@ public final class EdibleInteractionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInteract(PlayerInteractEvent event) {
         EquipmentSlot hand = event.getHand();
-        if (!event.getAction().isRightClick()
+        if ((event.getAction() != Action.RIGHT_CLICK_AIR
+                        && event.getAction() != Action.RIGHT_CLICK_BLOCK)
                 || hand == null
-                || !hand.isHand()
+                || (hand != EquipmentSlot.HAND && hand != EquipmentSlot.OFF_HAND)
                 || !items.isEdible(event.getItem())) {
             return;
         }
@@ -52,10 +54,37 @@ public final class EdibleInteractionListener implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
         int delay = settingsSource.get().consumeDelayTicks();
         if (delay == 0) {
-            edibles.consume(event.getPlayer(), hand);
+            consumeImmediately(event.getPlayer(), hand);
             return;
         }
         queue(event.getPlayer(), hand, delay);
+    }
+
+    private void consumeImmediately(Player player, EquipmentSlot hand) {
+        PendingConsumption key = new PendingConsumption(player.getUniqueId(), hand);
+        if (!addPending(key)) {
+            return;
+        }
+        boolean consumed;
+        try {
+            consumed = edibles.consume(player, hand);
+        } catch (RuntimeException exception) {
+            removePending(key);
+            throw exception;
+        }
+        if (!consumed) {
+            removePending(key);
+            return;
+        }
+        try {
+            plugin.getServer().getScheduler().runTask(plugin, () -> release(key));
+        } catch (RuntimeException exception) {
+            removePending(key);
+            plugin.getLogger().log(
+                    Level.SEVERE,
+                    "Could not schedule edible item click-guard cleanup",
+                    exception);
+        }
     }
 
     private void queue(Player player, EquipmentSlot hand, int delay) {
@@ -93,7 +122,8 @@ public final class EdibleInteractionListener implements Listener {
     private boolean addPending(PendingConsumption key) {
         while (true) {
             Set<PendingConsumption> current = pending.get();
-            if (current.contains(key)) {
+            if (current.stream().anyMatch(existing ->
+                    existing.playerId().equals(key.playerId()))) {
                 return false;
             }
             Set<PendingConsumption> changed = new HashSet<>(current);
@@ -101,6 +131,17 @@ public final class EdibleInteractionListener implements Listener {
             if (pending.compareAndSet(current, Set.copyOf(changed))) {
                 return true;
             }
+        }
+    }
+
+    private void release(PendingConsumption key) {
+        try {
+            removePending(key);
+        } catch (RuntimeException exception) {
+            plugin.getLogger().log(
+                    Level.SEVERE,
+                    "Could not release edible item click guard for " + key.playerId(),
+                    exception);
         }
     }
 

@@ -47,10 +47,10 @@ public final class RavagerProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onTarget(EntityTargetLivingEntityEvent event) {
-        if (event.getEntity() instanceof Ravager ravager
-                && event.getTarget() instanceof Player target) {
+        if (event.getEntity() instanceof Ravager ravager && event.getTarget() != null) {
             metadata.read(ravager).ifPresent(assignment -> {
-                if (!policy.canDamagePlayer(target.getUniqueId(), assignment)) {
+                if (!(event.getTarget() instanceof Player target)
+                        || !policy.canDamagePlayer(target.getUniqueId(), assignment)) {
                     event.setCancelled(true);
                 }
             });

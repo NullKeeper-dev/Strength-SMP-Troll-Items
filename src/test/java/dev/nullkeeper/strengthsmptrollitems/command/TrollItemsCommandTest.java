@@ -44,7 +44,7 @@ class TrollItemsCommandTest {
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         sender = server.addPlayer("Admin");
         sender.setOp(false);
         target = server.addPlayer("Target");

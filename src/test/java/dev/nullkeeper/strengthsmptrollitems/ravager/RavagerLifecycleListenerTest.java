@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ class RavagerLifecycleListenerTest {
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         shooter = server.addPlayer("Shooter");
         target = server.addPlayer("Target");
         outsider = server.addPlayer("Outsider");
@@ -77,6 +78,16 @@ class RavagerLifecycleListenerTest {
 
         assertTrue(registry.find(marked.getUniqueId()).isPresent());
         assertFalse(registry.find(ordinary.getUniqueId()).isPresent());
+    }
+
+    @Test
+    void chunkUnloadRemovesRavagersFromRuntimeIndexOnly() {
+        registry.register(marked);
+
+        lifecycle.onChunkUnload(new ChunkUnloadEvent(marked.getLocation().getChunk(), true));
+
+        assertFalse(registry.find(marked.getUniqueId()).isPresent());
+        assertEquals(assignment, metadata.read(marked).orElseThrow());
     }
 
     @Test

@@ -63,7 +63,7 @@ public final class RavagerTargetController implements Runnable {
         Player target = Bukkit.getPlayer(stored.get().targetId());
         if (eligible(ravager, target, followRangeSource.applyAsDouble(ravager))) {
             ravager.setTarget(target);
-        } else if (ravager.getTarget() instanceof Player) {
+        } else if (ravager.getTarget() != null) {
             ravager.setTarget(null);
         }
     }

@@ -87,6 +87,7 @@ class ConfigLoaderTest {
                 Arguments.of("resize.step", Double.NaN),
                 Arguments.of("ravagers.per-hit", 0),
                 Arguments.of("ravagers.per-hit", 65),
+                Arguments.of("ravagers.per-hit", 4294967301L),
                 Arguments.of("ravagers.speed-level", 0),
                 Arguments.of("ravagers.speed-level", 256),
                 Arguments.of("ravagers.spawn-radius", 0.0),

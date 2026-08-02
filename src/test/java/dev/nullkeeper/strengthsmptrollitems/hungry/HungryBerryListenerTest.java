@@ -49,7 +49,7 @@ class HungryBerryListenerTest {
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         attacker = server.addPlayer("Attacker");
         target = server.addPlayer("Target");
         items = new TrollItemService(new PersistentKeys(plugin));
@@ -126,6 +126,22 @@ class HungryBerryListenerTest {
         assertTrue(event.isCancelled());
         assertEquals(1, target.getInventory().getItemInOffHand().getAmount());
         assertTrue(items.isEdible(target.getInventory().getItemInOffHand()));
+    }
+
+    @Test
+    void pairedHandEventsConsumeOnlyOneItemPerServerTick() {
+        target.getInventory().setItemInMainHand(edibles.convert(new ItemStack(Material.STONE)));
+        target.getInventory().setItemInOffHand(edibles.convert(new ItemStack(Material.SHIELD, 2)));
+
+        interactionListener.onInteract(interact(target, EquipmentSlot.HAND, Action.RIGHT_CLICK_AIR));
+        interactionListener.onInteract(interact(target, EquipmentSlot.OFF_HAND, Action.RIGHT_CLICK_AIR));
+
+        assertTrue(target.getInventory().getItemInMainHand().getType().isAir());
+        assertEquals(2, target.getInventory().getItemInOffHand().getAmount());
+
+        server.getScheduler().performTicks(1);
+        interactionListener.onInteract(interact(target, EquipmentSlot.OFF_HAND, Action.RIGHT_CLICK_AIR));
+        assertEquals(1, target.getInventory().getItemInOffHand().getAmount());
     }
 
     @Test

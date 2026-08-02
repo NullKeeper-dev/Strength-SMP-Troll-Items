@@ -41,7 +41,7 @@ public final class TrollItemsCommand implements CommandExecutor, TabCompleter {
             @NotNull CommandSender sender,
             @NotNull Command command,
             @NotNull String label,
-            String @NotNull [] args) {
+            @NotNull String[] args) {
         try {
             if (args.length == 0) {
                 sendAvailableUsage(sender);
@@ -164,7 +164,7 @@ public final class TrollItemsCommand implements CommandExecutor, TabCompleter {
             @NotNull CommandSender sender,
             @NotNull Command command,
             @NotNull String alias,
-            String @NotNull [] args) {
+            @NotNull String[] args) {
         if (args.length == 1) {
             List<String> choices = new ArrayList<>(2);
             if (sender.hasPermission(GIVE_PERMISSION)) {

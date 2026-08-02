@@ -2,6 +2,7 @@ package dev.nullkeeper.strengthsmptrollitems.resize;
 
 import java.util.Objects;
 import java.util.logging.Level;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -18,6 +19,14 @@ public final class ScalePersistenceListener implements Listener {
     public ScalePersistenceListener(Plugin plugin, ScaleService scales) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.scales = Objects.requireNonNull(scales, "scales");
+    }
+
+    public void scanLoadedWorlds() {
+        for (World world : plugin.getServer().getWorlds()) {
+            for (LivingEntity entity : world.getLivingEntities()) {
+                scales.restore(entity);
+            }
+        }
     }
 
     @EventHandler

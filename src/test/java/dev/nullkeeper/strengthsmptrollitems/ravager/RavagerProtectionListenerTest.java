@@ -1,6 +1,7 @@
 package dev.nullkeeper.strengthsmptrollitems.ravager;
 
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
+import org.bukkit.entity.Cow;
 import org.bukkit.entity.Ravager;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -31,7 +32,7 @@ class RavagerProtectionListenerTest {
     @BeforeEach
     void setUp() {
         ServerMock server = MockBukkit.mock();
-        PluginMock plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        PluginMock plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         shooter = server.addPlayer("Shooter");
         target = server.addPlayer("Target");
         outsider = server.addPlayer("Outsider");
@@ -103,6 +104,19 @@ class RavagerProtectionListenerTest {
 
         assertTrue(wrongTarget.isCancelled());
         assertFalse(assignedTarget.isCancelled());
+    }
+
+    @Test
+    void privateRavagerMayNotTargetNonPlayerEntities() {
+        Cow cow = shooter.getWorld().spawn(shooter.getLocation(), Cow.class);
+        EntityTargetLivingEntityEvent nonPlayerTarget = new EntityTargetLivingEntityEvent(
+                ravager,
+                cow,
+                TargetReason.CLOSEST_ENTITY);
+
+        listener.onTarget(nonPlayerTarget);
+
+        assertTrue(nonPlayerTarget.isCancelled());
     }
 
     @Test

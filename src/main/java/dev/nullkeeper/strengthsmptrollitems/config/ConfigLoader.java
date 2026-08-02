@@ -185,7 +185,10 @@ public final class ConfigLoader {
             throw new ConfigException(path + " must be a whole number");
         }
         double decimal = number.doubleValue();
-        if (!Double.isFinite(decimal) || decimal != Math.rint(decimal)) {
+        if (!Double.isFinite(decimal)
+                || decimal != Math.rint(decimal)
+                || decimal < Integer.MIN_VALUE
+                || decimal > Integer.MAX_VALUE) {
             throw new ConfigException(path + " must be a whole number");
         }
         return number.intValue();

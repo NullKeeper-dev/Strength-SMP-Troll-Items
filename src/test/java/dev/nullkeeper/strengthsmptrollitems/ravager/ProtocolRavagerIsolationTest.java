@@ -22,7 +22,7 @@ class ProtocolRavagerIsolationTest {
     @BeforeEach
     void setUp() {
         MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
     }
 
     @AfterEach

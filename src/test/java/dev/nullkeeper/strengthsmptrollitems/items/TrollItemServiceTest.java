@@ -30,7 +30,7 @@ class TrollItemServiceTest {
     @BeforeEach
     void setUp() {
         MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         items = new TrollItemService(new PersistentKeys(plugin));
         config = new ConfigLoader().load(defaultYaml());
     }

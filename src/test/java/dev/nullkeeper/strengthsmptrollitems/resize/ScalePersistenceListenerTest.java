@@ -1,12 +1,15 @@
 package dev.nullkeeper.strengthsmptrollitems.resize;
 
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.persistence.PersistentDataType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,8 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.mockbukkit.mockbukkit.plugin.PluginMock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings({"deprecation", "removal"})
 class ScalePersistenceListenerTest {
@@ -28,7 +33,7 @@ class ScalePersistenceListenerTest {
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         player = server.addPlayer("Target");
         scales = new ScaleService(new PersistentKeys(plugin), Attribute.MOVEMENT_SPEED);
         listener = new ScalePersistenceListener(plugin, scales);
@@ -70,6 +75,53 @@ class ScalePersistenceListenerTest {
         listener.onChunkLoad(new ChunkLoadEvent(player.getLocation().getChunk(), false));
 
         assertEquals(1.05, cow.getAttribute(Attribute.MOVEMENT_SPEED).getBaseValue());
+    }
+
+    @Test
+    void startupScanRestoresAlreadyLoadedLivingEntities() {
+        LivingEntity cow = (LivingEntity) player.getWorld().spawnEntity(
+                player.getLocation(),
+                EntityType.COW);
+        storeThenReset(cow);
+
+        listener.scanLoadedWorlds();
+
+        assertEquals(1.05, cow.getAttribute(Attribute.MOVEMENT_SPEED).getBaseValue());
+    }
+
+    @Test
+    void malformedStoredScaleProducesContextualWarning() {
+        List<String> warnings = new ArrayList<>();
+        PersistentKeys keys = new PersistentKeys(plugin);
+        ScaleService warningScales = new ScaleService(
+                keys,
+                Attribute.MOVEMENT_SPEED,
+                warnings::add);
+        player.getPersistentDataContainer().set(
+                keys.scale(),
+                PersistentDataType.DOUBLE,
+                Double.NaN);
+
+        assertFalse(warningScales.restore(player));
+        assertEquals(1, warnings.size());
+        assertTrue(warnings.getFirst().contains(player.getUniqueId().toString()));
+    }
+
+    @Test
+    void wrongStoredScaleTypeProducesContextualWarning() {
+        List<String> warnings = new ArrayList<>();
+        PersistentKeys keys = new PersistentKeys(plugin);
+        ScaleService warningScales = new ScaleService(
+                keys,
+                Attribute.MOVEMENT_SPEED,
+                warnings::add);
+        player.getPersistentDataContainer().set(
+                keys.scale(),
+                PersistentDataType.STRING,
+                "large");
+
+        assertFalse(warningScales.restore(player));
+        assertEquals(1, warnings.size());
     }
 
     private void storeThenReset(LivingEntity entity) {

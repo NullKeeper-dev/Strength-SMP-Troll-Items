@@ -28,7 +28,7 @@ class RavagerVisibilityServiceTest {
     @BeforeEach
     void setUp() {
         ServerMock server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         shooter = server.addPlayer("Shooter");
         target = server.addPlayer("Target");
         outsider = server.addPlayer("Outsider");
@@ -92,7 +92,7 @@ class RavagerVisibilityServiceTest {
                 visibility::refresh,
                 (location, settings) -> location.getWorld().spawn(location, Ravager.class));
 
-        spawner.spawn(shooter, target, new RavagerSettings(1, 2, 1.0, 20));
+        spawner.spawn(shooter.getUniqueId(), target, new RavagerSettings(1, 2, 1.0, 20));
 
         Ravager spawned = registry.snapshot().values().stream()
                 .filter(candidate -> candidate != ravager)

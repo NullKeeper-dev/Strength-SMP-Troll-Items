@@ -35,7 +35,7 @@ class EdibleItemServiceTest {
     @BeforeEach
     void setUp() {
         ServerMock server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         player = server.addPlayer("Hungry");
         trollItems = new TrollItemService(new PersistentKeys(plugin));
         service = new EdibleItemService(trollItems, () -> new EdibleSettings(0, 0.0f, 0));

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.function.Consumer;
 import org.bukkit.Location;
@@ -54,13 +55,13 @@ public final class RavagerSpawner {
         this.spawnOperation = Objects.requireNonNull(spawnOperation, "spawnOperation");
     }
 
-    public SpawnResult spawn(Player shooter, Player target, RavagerSettings settings) {
-        Objects.requireNonNull(shooter, "shooter");
+    public SpawnResult spawn(UUID shooterId, Player target, RavagerSettings settings) {
+        Objects.requireNonNull(shooterId, "shooterId");
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(settings, "settings");
         List<Location> positions = findPositions(target.getLocation(), settings.spawnRadius());
         RavagerAssignment assignment = new RavagerAssignment(
-                shooter.getUniqueId(),
+                shooterId,
                 target.getUniqueId());
         int spawned = 0;
         for (int index = 0; index < settings.perHit() && !positions.isEmpty(); index++) {

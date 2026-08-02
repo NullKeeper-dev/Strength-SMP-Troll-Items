@@ -8,12 +8,15 @@ import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Cow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Ravager;
@@ -21,6 +24,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +53,7 @@ class SpookyCrossbowListenerTest {
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         shooter = server.addPlayer("Shooter");
         target = server.addPlayer("Target");
         Location spawn = new Location(shooter.getWorld(), 0.5, 64.0, 0.5);
@@ -85,6 +89,37 @@ class SpookyCrossbowListenerTest {
 
         assertEquals(shooter.getUniqueId(), tracker.shooterId(marked).orElseThrow());
         assertFalse(tracker.shooterId(ordinary).isPresent());
+    }
+
+    @Test
+    void malformedProjectileOriginProducesContextualWarning() {
+        List<String> warnings = new ArrayList<>();
+        PersistentKeys keys = new PersistentKeys(plugin);
+        ProjectileHitTracker warningTracker = new ProjectileHitTracker(keys, warnings::add);
+        Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation(), Arrow.class);
+        arrow.getPersistentDataContainer().set(
+                keys.projectileShooter(),
+                PersistentDataType.STRING,
+                "not-a-uuid");
+
+        assertFalse(warningTracker.shooterId(arrow).isPresent());
+        assertEquals(1, warnings.size());
+        assertTrue(warnings.getFirst().contains(arrow.getUniqueId().toString()));
+    }
+
+    @Test
+    void wrongProjectileOriginTypeProducesContextualWarning() {
+        List<String> warnings = new ArrayList<>();
+        PersistentKeys keys = new PersistentKeys(plugin);
+        ProjectileHitTracker warningTracker = new ProjectileHitTracker(keys, warnings::add);
+        Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation(), Arrow.class);
+        arrow.getPersistentDataContainer().set(
+                keys.projectileShooter(),
+                PersistentDataType.INTEGER,
+                1);
+
+        assertFalse(warningTracker.shooterId(arrow).isPresent());
+        assertEquals(1, warnings.size());
     }
 
     @Test
@@ -138,6 +173,20 @@ class SpookyCrossbowListenerTest {
     }
 
     @Test
+    void taggedProjectileStillSpawnsWhenShooterDisconnectsBeforeHit() {
+        Arrow arrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
+        shooter.disconnect();
+
+        listener.onDamage(damage(arrow, target, 1.0));
+
+        assertEquals(5, registry.snapshot().size());
+        assertTrue(registry.snapshot().values().stream()
+                .map(metadata::read)
+                .flatMap(java.util.Optional::stream)
+                .allMatch(assignment -> assignment.shooterId().equals(shooter.getUniqueId())));
+    }
+
+    @Test
     void failedGroundSearchReportsPartialSpawn() {
         target.teleport(new Location(target.getWorld(), 0.5, 100.0, 0.5));
         Arrow arrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
@@ -167,6 +216,8 @@ class SpookyCrossbowListenerTest {
         controller.run();
         assertEquals(target, ravager.getTarget());
 
+        Cow fallbackTarget = target.getWorld().spawn(target.getLocation(), Cow.class);
+        ravager.setTarget(fallbackTarget);
         target.teleport(server.addSimpleWorld("elsewhere").getSpawnLocation());
         controller.run();
 

@@ -61,7 +61,9 @@ public final class RuntimeComponents implements AutoCloseable {
             PersistentKeys keys = new PersistentKeys(plugin);
             TrollItemService items = new TrollItemService(keys);
             PrivateRavagerRegistry registry = new PrivateRavagerRegistry();
-            RavagerMetadataStore metadata = new RavagerMetadataStore(keys);
+            RavagerMetadataStore metadata = new RavagerMetadataStore(
+                    keys,
+                    warning -> plugin.getLogger().warning(warning));
             RavagerAccessPolicy policy = new RavagerAccessPolicy();
             RavagerVisibilityService visibility = new RavagerVisibilityService(
                     plugin,
@@ -130,7 +132,10 @@ public final class RuntimeComponents implements AutoCloseable {
             RavagerMetadataStore metadata,
             RavagerAccessPolicy policy,
             RavagerVisibilityService visibility) {
-        ScaleService scales = new ScaleService(keys);
+        ScaleService scales = new ScaleService(
+                keys,
+                warning -> plugin.getLogger().warning(warning));
+        ScalePersistenceListener scalePersistence = new ScalePersistenceListener(plugin, scales);
         EdibleItemService edibles = new EdibleItemService(
                 items,
                 () -> configs.current().edible());
@@ -146,7 +151,7 @@ public final class RuntimeComponents implements AutoCloseable {
                 visibility);
         List<Listener> listeners = List.of(
                 new ResizingSwordListener(items, scales, configs::current),
-                new ScalePersistenceListener(plugin, scales),
+                scalePersistence,
                 new HungryBerryListener(items, edibles, configs::current),
                 new EdibleInteractionListener(
                         plugin,
@@ -155,13 +160,16 @@ public final class RuntimeComponents implements AutoCloseable {
                         () -> configs.current().edible()),
                 new SpookyCrossbowListener(
                         items,
-                        new ProjectileHitTracker(keys),
+                        new ProjectileHitTracker(
+                                keys,
+                                warning -> plugin.getLogger().warning(warning)),
                         spawner,
                         configs::current),
                 new RavagerProtectionListener(metadata, policy),
                 lifecycle);
         PluginManager manager = plugin.getServer().getPluginManager();
         listeners.forEach(listener -> manager.registerEvents(listener, plugin));
+        scalePersistence.scanLoadedWorlds();
         lifecycle.scanLoadedWorlds();
         return new RavagerTargetController(plugin, registry, metadata);
     }

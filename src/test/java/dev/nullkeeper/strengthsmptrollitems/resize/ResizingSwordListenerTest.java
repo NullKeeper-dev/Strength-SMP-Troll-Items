@@ -41,7 +41,7 @@ class ResizingSwordListenerTest {
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        PluginMock plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        PluginMock plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         attacker = server.addPlayer("Attacker");
         target = server.addPlayer("Target");
         scaleAttribute = Attribute.MOVEMENT_SPEED;

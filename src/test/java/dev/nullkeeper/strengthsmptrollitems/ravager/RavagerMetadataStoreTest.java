@@ -1,6 +1,8 @@
 package dev.nullkeeper.strengthsmptrollitems.ravager;
 
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.NamespacedKey;
@@ -16,6 +18,7 @@ import org.mockbukkit.mockbukkit.plugin.PluginMock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RavagerMetadataStoreTest {
     private PluginMock plugin;
@@ -26,7 +29,7 @@ class RavagerMetadataStoreTest {
     @BeforeEach
     void setUp() {
         ServerMock server = MockBukkit.mock();
-        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "0.1.0");
+        plugin = MockBukkit.createMockPlugin("StrengthSmpTrollItems", "test");
         first = server.addSimpleWorld("world").spawn(
                 server.getWorld("world").getSpawnLocation(),
                 Ravager.class);
@@ -54,6 +57,45 @@ class RavagerMetadataStoreTest {
                 UUID.randomUUID().toString());
 
         assertFalse(metadata.read(first).isPresent());
+    }
+
+    @Test
+    void malformedMetadataProducesContextualWarning() {
+        List<String> warnings = new ArrayList<>();
+        RavagerMetadataStore warningMetadata = new RavagerMetadataStore(
+                new PersistentKeys(plugin),
+                warnings::add);
+        first.getPersistentDataContainer().set(
+                new NamespacedKey(plugin, "ravager_shooter"),
+                PersistentDataType.STRING,
+                "not-a-uuid");
+        first.getPersistentDataContainer().set(
+                new NamespacedKey(plugin, "ravager_target"),
+                PersistentDataType.STRING,
+                UUID.randomUUID().toString());
+
+        assertFalse(warningMetadata.read(first).isPresent());
+        assertEquals(1, warnings.size());
+        assertTrue(warnings.getFirst().contains(first.getUniqueId().toString()));
+    }
+
+    @Test
+    void wrongMetadataTypesProduceContextualWarning() {
+        List<String> warnings = new ArrayList<>();
+        RavagerMetadataStore warningMetadata = new RavagerMetadataStore(
+                new PersistentKeys(plugin),
+                warnings::add);
+        first.getPersistentDataContainer().set(
+                new NamespacedKey(plugin, "ravager_shooter"),
+                PersistentDataType.INTEGER,
+                1);
+        first.getPersistentDataContainer().set(
+                new NamespacedKey(plugin, "ravager_target"),
+                PersistentDataType.INTEGER,
+                2);
+
+        assertFalse(warningMetadata.read(first).isPresent());
+        assertEquals(1, warnings.size());
     }
 
     @Test

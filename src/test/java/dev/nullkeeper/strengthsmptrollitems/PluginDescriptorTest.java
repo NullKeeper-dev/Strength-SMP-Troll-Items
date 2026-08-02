@@ -17,7 +17,7 @@ class PluginDescriptorTest {
 
         assertEquals("StrengthSmpTrollItems", descriptor.getString("name"));
         assertEquals(StrengthSmpTrollItemsPlugin.class.getName(), descriptor.getString("main"));
-        assertEquals("0.1.0", descriptor.getString("version"));
+        assertEquals(System.getProperty("projectVersion"), descriptor.getString("version"));
         assertEquals("26.1", descriptor.getString("api-version"));
         assertEquals(List.of("ProtocolLib"), descriptor.getStringList("depend"));
         assertNotNull(descriptor.getConfigurationSection("commands.trollitems"));

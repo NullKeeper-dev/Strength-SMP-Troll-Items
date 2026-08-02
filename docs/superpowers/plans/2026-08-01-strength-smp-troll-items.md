@@ -6,7 +6,7 @@
 
 **Architecture:** A small `JavaPlugin` composition root wires immutable YAML configuration, Persistent Data Container-backed item/entity services, focused Bukkit listeners, and a ProtocolLib isolation adapter. Pure calculations and authorization rules remain separate from Bukkit-facing code so MockBukkit and JUnit can verify them without a live server.
 
-**Tech Stack:** Java 25, Gradle 9.5.1 Kotlin DSL, Paper API 26.1.2 build 74, ProtocolLib 5.4.0 compile API with 5.5 development runtime, MockBukkit 4.114.0, and JUnit 6.1.0.
+**Tech Stack:** Java 25, Gradle 9.5.1 Kotlin DSL, Spigot API 26.1 compile baseline with a 26.2 compatibility compile, Paper API 26.1.2 for tests, ProtocolLib 5.4.0 compile API with a current development runtime, MockBukkit 4.114.0, and JUnit 6.1.0.
 
 ## Global Constraints
 
@@ -100,7 +100,7 @@
 
 - [x] **Step 1: Create the Gradle skeleton and wrapper**
 
-Use `version=0.1.0`, Java toolchain/release 25, Paper API `26.1.2.build.74-stable`, ProtocolLib `5.4.0`, MockBukkit `4.114.0`, and JUnit BOM `6.1.0`. Configure `processResources` with:
+Use `version=0.1.0`, Java toolchain/release 25, Spigot API `26.1-R0.1-SNAPSHOT` for production compilation, Paper API `26.1.2.build.74-stable` for tests, ProtocolLib `5.4.0`, MockBukkit `4.114.0`, and JUnit BOM `6.1.0`. Configure `processResources` with:
 
 ```kotlin
 filesMatching("plugin.yml") {
@@ -577,15 +577,15 @@ git commit -m "Wire Strength SMP Troll Items plugin"
 - Consumes the completed commands, configuration schema, permissions, build, and verified behavior.
 - Produces the `0.1.0` distributable and human verification handoff.
 
-- [ ] **Step 1: Write project documentation**
+- [x] **Step 1: Write project documentation**
 
 Follow the repository README structure exactly: centered placeholder icon, title/tagline/badges, feature table, three action screenshot placeholders, Modrinth install link, ProtocolLib official listing, numbered use steps, commands/permissions/config, unbounded-Ravager warning, collapsible Java 25 Gradle build instructions, inspiration video/channel credits, and GPL-3.0-only footer for 2026 NullKeeper-dev.
 
-- [ ] **Step 2: Add release metadata**
+- [x] **Step 2: Add release metadata**
 
 Create one changelog entry headed `## [0.1.0]` describing the complete initial feature set. Add the full GPL-3.0-only license. Confirm `gradle.properties` remains the only literal project version source and `plugin.yml` still contains `${version}`.
 
-- [ ] **Step 3: Run formatting, secret, and repository checks**
+- [x] **Step 3: Run formatting, secret, and repository checks**
 
 Run:
 
@@ -597,21 +597,21 @@ git grep -n -I -E "(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{20,
 
 Expected: no whitespace errors, no credential-like matches, and only intended project files modified. Confirm `.gitignore` covers `.gradle/`, `build/`, `run/`, `.idea/`, and local environment files.
 
-- [ ] **Step 4: Build and inspect the distributable**
+- [x] **Step 4: Build and inspect the distributable**
 
 Run: `./gradlew clean build`
 
 Expected: tests pass and exactly one normal jar appears under `build/libs/` with no `-sources.jar`. Inspect it with `jar tf` and verify `plugin.yml`, `config.yml`, production classes, and no test/MockBukkit/ProtocolLib classes are bundled.
 
-- [ ] **Step 5: Record manual verification status**
+- [x] **Step 5: Record manual verification status**
 
 Document that this environment cannot replace the required three-player live-server matrix unless runnable servers, clients, and compatible ProtocolLib builds are available. List exact checks for scale rendering/persistence, private Ravager visual/audio/collision/damage behavior, stacking, world interaction, relog/death/restart, and arbitrary-item instant consumption across 26.1, 26.1.1, 26.1.2, and 26.2.
 
-- [ ] **Step 6: Review the full unreleased diff**
+- [x] **Step 6: Review the full unreleased diff**
 
 Compare against commit `0c8b2f0` and the approved design. Fix critical/high correctness, security, compatibility, and documentation findings. Re-run `./gradlew clean build` after every fix.
 
-- [ ] **Step 7: Commit release-ready project files**
+- [x] **Step 7: Commit release-ready project files**
 
 ```text
 git add .gitignore README.md CHANGELOG.md LICENSE build.gradle.kts settings.gradle.kts gradle.properties gradle gradlew gradlew.bat src docs/superpowers/plans/2026-08-01-strength-smp-troll-items.md

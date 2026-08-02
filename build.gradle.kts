@@ -4,14 +4,17 @@ plugins {
 
 group = providers.gradleProperty("group").get()
 version = providers.gradleProperty("version").get()
+val bukkitApiVersion = providers.gradleProperty("bukkitApiVersion")
+    .orElse("26.1-R0.1-SNAPSHOT")
 
 repositories {
     mavenCentral()
+    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.74-stable")
+    compileOnly("org.spigotmc:spigot-api:${bukkitApiVersion.get()}")
     compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
 
     testImplementation(platform("org.junit:junit-bom:6.1.0"))
@@ -41,6 +44,7 @@ tasks.processResources {
 
 tasks.test {
     useJUnitPlatform()
+    systemProperty("projectVersion", project.version.toString())
 }
 
 tasks.jar {

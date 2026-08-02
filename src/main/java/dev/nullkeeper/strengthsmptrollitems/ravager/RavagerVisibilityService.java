@@ -40,16 +40,6 @@ public final class RavagerVisibilityService {
         }
     }
 
-    public void hideFromUnauthorized(Ravager ravager) {
-        metadata.read(ravager).ifPresent(assignment -> {
-            for (Player viewer : Bukkit.getOnlinePlayers()) {
-                if (!policy.canObserve(viewer.getUniqueId(), assignment)) {
-                    viewer.hideEntity(plugin, ravager);
-                }
-            }
-        });
-    }
-
     private void apply(Player viewer, Ravager ravager, RavagerAssignment assignment) {
         if (policy.canObserve(viewer.getUniqueId(), assignment)) {
             viewer.showEntity(plugin, ravager);
