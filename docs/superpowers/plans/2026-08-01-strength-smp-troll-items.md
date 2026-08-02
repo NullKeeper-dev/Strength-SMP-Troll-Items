@@ -311,17 +311,17 @@ git commit -m "Add persistent resizing sword"
 - Consumes: edible PDC methods from `TrollItemService` and `PluginConfig.edible()`.
 - Produces: `EdibleItemService.convert(ItemStack)` returning a cloned marked stack and `consume(Player, EquipmentSlot)` returning whether one item was consumed.
 
-- [ ] **Step 1: Write failing conversion tests**
+- [x] **Step 1: Write failing conversion tests**
 
 Verify that conversion clones rather than mutates the input, marks the entire amount, and preserves material, damage, enchantments, name, lore, custom model data, and existing PDC. Verify one right-click decrements one, consumes the final item to air, works at full hunger, and changes neither hunger nor saturation at zero defaults.
 
-- [ ] **Step 2: Run conversion tests and confirm red**
+- [x] **Step 2: Run conversion tests and confirm red**
 
 Run: `./gradlew test --tests "*.EdibleItemServiceTest"`
 
 Expected: compilation fails because `EdibleItemService` does not exist.
 
-- [ ] **Step 3: Implement immutable conversion and consumption**
+- [x] **Step 3: Implement immutable conversion and consumption**
 
 Clone the target stack before adding `strengthsmptrollitems:edible`. On interaction, clone/decrement/replace the event hand stack, cancel the original right-click action, and apply configured nutrition/saturation without exceeding vanilla bounds. A converted item's original right-click action never runs.
 
@@ -341,11 +341,11 @@ equipment.setItem(slot, remaining.getAmount() == 0 ? new ItemStack(Material.AIR)
 
 When `consumeTicks` is zero, consume in the event callback. For a configured positive delay, add the player/hand pair to a copy-on-write pending set and run one protected scheduler task; at completion, consume only if that hand still contains a marked edible item, then remove the pending key in `finally`. Repeated clicks for the same pending player/hand do not queue extra consumption.
 
-- [ ] **Step 4: Write failing listener tests**
+- [x] **Step 4: Write failing listener tests**
 
 Cover marked-berry main-hand gating, player-only targets, target main hand only, empty main hand message, cancelled/no-final-damage no-op, attacker berry not consumed, and converted offhand consumption after later transfer.
 
-- [ ] **Step 5: Implement listeners, test, and commit**
+- [x] **Step 5: Implement listeners, test, and commit**
 
 Run: `./gradlew test --tests "*.Edible*" --tests "*.HungryBerryListenerTest"`
 

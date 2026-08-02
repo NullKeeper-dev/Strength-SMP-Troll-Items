@@ -44,4 +44,26 @@ public final class TrollItemService {
                 PersistentDataType.STRING);
         return expected.id().equals(value);
     }
+
+    public ItemStack markEdible(ItemStack original) {
+        Objects.requireNonNull(original, "original");
+        ItemStack marked = original.clone();
+        ItemMeta meta = marked.getItemMeta();
+        meta.getPersistentDataContainer().set(
+                keys.edible(),
+                PersistentDataType.BYTE,
+                (byte) 1);
+        marked.setItemMeta(meta);
+        return marked;
+    }
+
+    public boolean isEdible(ItemStack item) {
+        if (item == null || item.getType().isAir() || !item.hasItemMeta()) {
+            return false;
+        }
+        Byte value = item.getItemMeta().getPersistentDataContainer().get(
+                keys.edible(),
+                PersistentDataType.BYTE);
+        return value != null && value == (byte) 1;
+    }
 }
