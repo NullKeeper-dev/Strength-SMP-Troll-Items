@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
+import java.util.function.Consumer;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -22,14 +23,24 @@ public final class RavagerSpawner {
     private final Plugin plugin;
     private final RavagerMetadataStore metadata;
     private final PrivateRavagerRegistry registry;
+    private final Consumer<Ravager> afterRegistration;
 
     public RavagerSpawner(
             Plugin plugin,
             RavagerMetadataStore metadata,
             PrivateRavagerRegistry registry) {
+        this(plugin, metadata, registry, ravager -> {});
+    }
+
+    public RavagerSpawner(
+            Plugin plugin,
+            RavagerMetadataStore metadata,
+            PrivateRavagerRegistry registry,
+            Consumer<Ravager> afterRegistration) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.metadata = Objects.requireNonNull(metadata, "metadata");
         this.registry = Objects.requireNonNull(registry, "registry");
+        this.afterRegistration = Objects.requireNonNull(afterRegistration, "afterRegistration");
     }
 
     public SpawnResult spawn(Player shooter, Player target, RavagerSettings settings) {
@@ -53,8 +64,9 @@ public final class RavagerSpawner {
             Location location,
             RavagerSettings settings,
             RavagerAssignment assignment) {
+        Ravager ravager = null;
         try {
-            Ravager ravager = location.getWorld().spawn(
+            ravager = location.getWorld().spawn(
                     location,
                     Ravager.class,
                     SpawnReason.CUSTOM,
@@ -62,8 +74,13 @@ public final class RavagerSpawner {
                     spawned -> configure(spawned, settings));
             metadata.write(ravager, assignment);
             registry.register(ravager);
+            afterRegistration.accept(ravager);
             return true;
         } catch (RuntimeException exception) {
+            if (ravager != null) {
+                registry.unregister(ravager.getUniqueId());
+                ravager.remove();
+            }
             plugin.getLogger().log(
                     Level.WARNING,
                     "Could not spawn a private Ravager at " + compact(location),

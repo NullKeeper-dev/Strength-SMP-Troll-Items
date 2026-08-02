@@ -452,17 +452,17 @@ git commit -m "Add persistent spooky ravagers"
 - Produces: `RavagerVisibilityService.refresh(Ravager)`, `refresh(Player)`, and `hideFromUnauthorized(Ravager)`.
 - Produces: `ProtocolRavagerIsolation.start()` and `close()`.
 
-- [ ] **Step 1: Write failing visibility and protection tests**
+- [x] **Step 1: Write failing visibility and protection tests**
 
 With shooter, target, and outsider mocks, prove Bukkit show/hide state; outsider damage/interaction cancellation; shooter and target may damage/kill; Ravager damage is cancelled for shooter/outsider but allowed for target; unrelated Ravagers are untouched.
 
-- [ ] **Step 2: Run tests and confirm red**
+- [x] **Step 2: Run tests and confirm red**
 
 Run: `./gradlew test --tests "*.RavagerVisibilityServiceTest" --tests "*.RavagerProtectionListenerTest"`
 
 Expected: compilation fails because visibility/protection classes do not exist.
 
-- [ ] **Step 3: Implement Bukkit visibility and event defense**
+- [x] **Step 3: Implement Bukkit visibility and event defense**
 
 Call `showEntity(plugin, ravager)` only for shooter/target and `hideEntity(plugin, ravager)` for everyone else. Repeat authorization in entity damage, entity-target, and interaction events. Preserve normal block/world and non-player interactions.
 
@@ -476,7 +476,7 @@ for (Player viewer : Bukkit.getOnlinePlayers()) {
 }
 ```
 
-- [ ] **Step 4: Implement ProtocolLib fail-closed isolation**
+- [x] **Step 4: Implement ProtocolLib fail-closed isolation**
 
 Register packet adapters for Ravager entity-bound sound and outsider `USE_ENTITY` interaction. Resolve entity IDs through `ProtocolManager`, cancel when registry metadata identifies a private Ravager and policy denies the viewer, catch version-sensitive decode failures per packet, and disable this plugin with a detailed console error if adapters cannot register. `close()` must remove only this plugin's listeners.
 
@@ -495,11 +495,11 @@ PacketAdapter soundFilter = new PacketAdapter(
 };
 ```
 
-- [ ] **Step 5: Write and implement lifecycle recovery tests**
+- [x] **Step 5: Write and implement lifecycle recovery tests**
 
 Verify startup and chunk-load scans register marked Ravagers, player join/world change refreshes visibility, target respawn preserves assignment, target logout clears only live AI target, and Ravager death unregisters without respawn.
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests and commit**
 
 Run: `./gradlew test --tests "*.ravager.*"`
 
