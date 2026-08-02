@@ -98,7 +98,7 @@
 - Produces: `PluginConfig`, `ConfigLoader.load(ConfigurationSection)`, `ConfigService.current()`, `ConfigService.reload(ConfigurationSection)`, and `ConfigService.reloadFromDisk()`.
 - Both reload methods return `ReloadResult(boolean successful, String message)` and never discard the last valid snapshot on failure. The command calls `reloadFromDisk()`; tests pass explicit sections to `reload(ConfigurationSection)`.
 
-- [ ] **Step 1: Create the Gradle skeleton and wrapper**
+- [x] **Step 1: Create the Gradle skeleton and wrapper**
 
 Use `version=0.1.0`, Java toolchain/release 25, Paper API `26.1.2.build.74-stable`, ProtocolLib `5.4.0`, MockBukkit `4.114.0`, and JUnit BOM `6.1.0`. Configure `processResources` with:
 
@@ -110,7 +110,7 @@ filesMatching("plugin.yml") {
 
 Generate the wrapper with `gradle wrapper --gradle-version 9.5.1`, and do not configure `withSourcesJar()`.
 
-- [ ] **Step 2: Write failing configuration tests**
+- [x] **Step 2: Write failing configuration tests**
 
 Cover defaults, `resize-step: 0.05`, Ravager count/speed/radius/retarget interval, edible zero nutrition/saturation/delay, message loading, missing-key defaults, and rejection of invalid numeric ranges. Include this atomicity assertion:
 
@@ -121,13 +121,13 @@ assertFalse(result.successful());
 assertSame(before, service.current());
 ```
 
-- [ ] **Step 3: Run the focused test and confirm red**
+- [x] **Step 3: Run the focused test and confirm red**
 
 Run: `./gradlew test --tests "*.ConfigLoaderTest"`
 
 Expected: compilation fails because the configuration classes do not exist.
 
-- [ ] **Step 4: Implement immutable validated configuration**
+- [x] **Step 4: Implement immutable validated configuration**
 
 Define nested records in `PluginConfig`:
 
@@ -142,13 +142,13 @@ public record PluginConfig(
 
 Return `Map.copyOf` and `List.copyOf` at construction boundaries. Accept Ravager count `1..64`, speed level `1..255`, positive finite spawn radius, retarget ticks `1..1200`, nonnegative finite resize step, nutrition `0..20`, nonnegative finite saturation, and consume ticks `0..72000`. Reject the entire snapshot on invalid types/ranges.
 
-- [ ] **Step 5: Run tests and inspect resource expansion**
+- [x] **Step 5: Run tests and inspect resource expansion**
 
 Run: `./gradlew clean test processResources`
 
 Expected: configuration tests pass and `build/resources/main/plugin.yml` contains `version: '0.1.0'` plus `depend: [ProtocolLib]`.
 
-- [ ] **Step 6: Commit the foundation**
+- [x] **Step 6: Commit the foundation**
 
 ```text
 git add .gitignore settings.gradle.kts build.gradle.kts gradle.properties gradle gradlew gradlew.bat src
@@ -170,17 +170,17 @@ git commit -m "Add plugin build and configuration foundation"
 - Produces: `TrollItemService.create(TrollItemType, PluginConfig)`, `isType(ItemStack, TrollItemType)`, `markEdible(ItemStack)`, `isEdible(ItemStack)`, `tagProjectile(Projectile, UUID)`, and `projectileShooter(Projectile)`.
 - Produces: `GiveItemService.give(Player, TrollItemType, int, PluginConfig)` returning `GiveResult(int delivered, int dropped)`.
 
-- [ ] **Step 1: Write failing MockBukkit item tests**
+- [x] **Step 1: Write failing MockBukkit item tests**
 
 Verify material, bold configured name/color, gray lore, unbreakable Wooden Sword, ordinary Crossbow durability, Glow Berry stacking, stable PDC identity after rename, false identity for a lookalike vanilla item, and preservation of identity through clone/serialization.
 
-- [ ] **Step 2: Run the item tests and confirm red**
+- [x] **Step 2: Run the item tests and confirm red**
 
 Run: `./gradlew test --tests "*.TrollItemServiceTest"`
 
 Expected: compilation fails because item types/services do not exist.
 
-- [ ] **Step 3: Implement item identity and factory methods**
+- [x] **Step 3: Implement item identity and factory methods**
 
 Use stable IDs `resizing_sword`, `spooky_crossbow`, and `hungry_berry`. Parse configured legacy ampersand colors, including hex orange, into Bukkit-supported display strings. Store the item ID under `strengthsmptrollitems:item_type`.
 
@@ -192,17 +192,17 @@ created.setItemMeta(meta);
 return created;
 ```
 
-- [ ] **Step 4: Write failing command tests**
+- [x] **Step 4: Write failing command tests**
 
 Test permission denial, console use, default amount, invalid player/item/amount, amount bounds `1..64`, unstackable delivery, berry stacking, inventory overflow, reload permission, successful reload, and failed reload retaining the previous snapshot.
 
-- [ ] **Step 5: Run command tests and confirm red**
+- [x] **Step 5: Run command tests and confirm red**
 
 Run: `./gradlew test --tests "*.TrollItemsCommandTest"`
 
 Expected: compilation fails because command classes do not exist.
 
-- [ ] **Step 6: Implement command and delivery boundaries**
+- [x] **Step 6: Implement command and delivery boundaries**
 
 Catch unexpected exceptions at the top of `onCommand`, send the configured safe error, and log the command/subcommand plus stack trace. Validate all inputs before creating items. Deliver overflow with `World.dropItemNaturally` and report the exact dropped count.
 
@@ -220,13 +220,13 @@ try {
 }
 ```
 
-- [ ] **Step 7: Run focused and full tests**
+- [x] **Step 7: Run focused and full tests**
 
 Run: `./gradlew test --tests "*.TrollItemServiceTest" --tests "*.TrollItemsCommandTest"`
 
 Expected: all item and command tests pass.
 
-- [ ] **Step 8: Commit items and commands**
+- [x] **Step 8: Commit items and commands**
 
 ```text
 git add src/main src/test

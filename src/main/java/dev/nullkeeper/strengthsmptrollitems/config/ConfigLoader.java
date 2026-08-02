@@ -52,6 +52,8 @@ public final class ConfigLoader {
             "messages",
             "messages.no-permission",
             "messages.usage",
+            "messages.give-usage",
+            "messages.reload-usage",
             "messages.player-not-found",
             "messages.unknown-item",
             "messages.invalid-amount",
@@ -131,6 +133,8 @@ public final class ConfigLoader {
         return new Messages(
                 string(root, "messages.no-permission", "&cYou do not have permission to use this command."),
                 string(root, "messages.usage", "&eUsage: /trollitems give <player> <resizing_sword|spooky_crossbow|hungry_berry> [amount] or /trollitems reload"),
+                string(root, "messages.give-usage", "&eUsage: /trollitems give <player> <resizing_sword|spooky_crossbow|hungry_berry> [amount]"),
+                string(root, "messages.reload-usage", "&eUsage: /trollitems reload"),
                 string(root, "messages.player-not-found", "&cPlayer '{player}' is not online."),
                 string(root, "messages.unknown-item", "&cUnknown troll item '{item}'."),
                 string(root, "messages.invalid-amount", "&cAmount must be a whole number from 1 through 64."),

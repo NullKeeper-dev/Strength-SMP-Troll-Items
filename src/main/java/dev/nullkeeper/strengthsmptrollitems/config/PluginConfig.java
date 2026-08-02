@@ -43,6 +43,8 @@ public record PluginConfig(
     public record Messages(
             String noPermission,
             String usage,
+            String giveUsage,
+            String reloadUsage,
             String playerNotFound,
             String unknownItem,
             String invalidAmount,
@@ -60,6 +62,8 @@ public record PluginConfig(
         public Messages {
             Objects.requireNonNull(noPermission, "noPermission");
             Objects.requireNonNull(usage, "usage");
+            Objects.requireNonNull(giveUsage, "giveUsage");
+            Objects.requireNonNull(reloadUsage, "reloadUsage");
             Objects.requireNonNull(playerNotFound, "playerNotFound");
             Objects.requireNonNull(unknownItem, "unknownItem");
             Objects.requireNonNull(invalidAmount, "invalidAmount");

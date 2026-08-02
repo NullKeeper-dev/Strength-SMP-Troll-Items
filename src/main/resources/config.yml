@@ -31,6 +31,8 @@ edible:
 messages:
   no-permission: "&cYou do not have permission to use this command."
   usage: "&eUsage: /trollitems give <player> <resizing_sword|spooky_crossbow|hungry_berry> [amount] or /trollitems reload"
+  give-usage: "&eUsage: /trollitems give <player> <resizing_sword|spooky_crossbow|hungry_berry> [amount]"
+  reload-usage: "&eUsage: /trollitems reload"
   player-not-found: "&cPlayer '{player}' is not online."
   unknown-item: "&cUnknown troll item '{item}'."
   invalid-amount: "&cAmount must be a whole number from 1 through 64."
