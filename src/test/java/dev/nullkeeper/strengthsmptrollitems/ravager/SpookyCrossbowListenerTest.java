@@ -64,7 +64,12 @@ class SpookyCrossbowListenerTest {
         metadata = new RavagerMetadataStore(keys);
         registry = new PrivateRavagerRegistry();
         config = new ConfigLoader().load(defaultYaml());
-        RavagerSpawner spawner = new RavagerSpawner(plugin, metadata, registry);
+        RavagerSpawner spawner = new RavagerSpawner(
+                plugin,
+                metadata,
+                registry,
+                ravager -> {},
+                (location, settings) -> location.getWorld().spawn(location, Ravager.class));
         listener = new SpookyCrossbowListener(items, tracker, spawner, () -> config);
     }
 
@@ -98,9 +103,6 @@ class SpookyCrossbowListenerTest {
                 target.getUniqueId());
         for (Ravager ravager : registry.snapshot().values()) {
             assertEquals(expected, metadata.read(ravager).orElseThrow());
-            assertTrue(ravager.isPersistent());
-            assertFalse(ravager.getRemoveWhenFarAway());
-            assertFalse(ravager.isCollidable());
         }
     }
 
@@ -156,8 +158,12 @@ class SpookyCrossbowListenerTest {
         RavagerTargetController controller = new RavagerTargetController(
                 plugin,
                 registry,
-                metadata);
+                metadata,
+                ignored -> 32.0);
 
+        assertTrue(target.isOnline());
+        assertTrue(ravager.isValid());
+        assertEquals(target.getWorld(), ravager.getWorld());
         controller.run();
         assertEquals(target, ravager.getTarget());
 

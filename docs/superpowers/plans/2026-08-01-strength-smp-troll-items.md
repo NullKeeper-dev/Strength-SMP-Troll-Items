@@ -523,17 +523,17 @@ git commit -m "Isolate private ravager visibility"
 - Produces `RuntimeComponents.start(JavaPlugin, ProtocolManager)` and `RuntimeComponents.close()`.
 - Produces the runtime plugin lifecycle declared in `plugin.yml`.
 
-- [ ] **Step 1: Write failing descriptor and lifecycle tests**
+- [x] **Step 1: Write failing descriptor and lifecycle tests**
 
 Assert plugin name, main class, expanded version, `api-version: '26.1'`, `depend: [ProtocolLib]`, command registration, permission defaults, default config creation, listener registration, and task/listener cleanup on disable.
 
-- [ ] **Step 2: Run tests and confirm red**
+- [x] **Step 2: Run tests and confirm red**
 
 Run: `./gradlew test --tests "*.PluginDescriptorTest" --tests "*.PluginIntegrationTest"`
 
 Expected: compilation fails because the plugin entrypoint does not exist.
 
-- [ ] **Step 3: Wire the composition root**
+- [x] **Step 3: Wire the composition root**
 
 In `onEnable`, save defaults, load one validated snapshot, create keys/services, register commands/listeners, scan loaded worlds, start ProtocolLib isolation, and schedule the protected retarget task. If initial config or ProtocolLib setup fails, log context and disable the plugin. In `onDisable`, close packet isolation and cancel the owned task.
 
@@ -551,13 +551,13 @@ public void onEnable() {
 }
 ```
 
-- [ ] **Step 4: Run the complete automated suite**
+- [x] **Step 4: Run the complete automated suite**
 
 Run: `./gradlew clean test`
 
 Expected: all tests pass with no skipped tests hiding an unimplemented MockBukkit operation; any unavoidable skipped network behavior is moved to the manual test list rather than asserted as automated coverage.
 
-- [ ] **Step 5: Commit the integrated plugin**
+- [x] **Step 5: Commit the integrated plugin**
 
 ```text
 git add src/main src/test

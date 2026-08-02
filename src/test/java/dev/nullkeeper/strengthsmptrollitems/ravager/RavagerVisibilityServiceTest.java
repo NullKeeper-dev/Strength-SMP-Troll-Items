@@ -89,7 +89,8 @@ class RavagerVisibilityServiceTest {
                 plugin,
                 metadata,
                 registry,
-                visibility::refresh);
+                visibility::refresh,
+                (location, settings) -> location.getWorld().spawn(location, Ravager.class));
 
         spawner.spawn(shooter, target, new RavagerSettings(1, 2, 1.0, 20));
 

@@ -2,6 +2,7 @@ package dev.nullkeeper.strengthsmptrollitems.ravager;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.ToDoubleFunction;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
@@ -14,14 +15,24 @@ public final class RavagerTargetController implements Runnable {
     private final Plugin plugin;
     private final PrivateRavagerRegistry registry;
     private final RavagerMetadataStore metadata;
+    private final ToDoubleFunction<Ravager> followRangeSource;
 
     public RavagerTargetController(
             Plugin plugin,
             PrivateRavagerRegistry registry,
             RavagerMetadataStore metadata) {
+        this(plugin, registry, metadata, RavagerTargetController::followRange);
+    }
+
+    RavagerTargetController(
+            Plugin plugin,
+            PrivateRavagerRegistry registry,
+            RavagerMetadataStore metadata,
+            ToDoubleFunction<Ravager> followRangeSource) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.registry = Objects.requireNonNull(registry, "registry");
         this.metadata = Objects.requireNonNull(metadata, "metadata");
+        this.followRangeSource = Objects.requireNonNull(followRangeSource, "followRangeSource");
     }
 
     @Override
@@ -50,23 +61,28 @@ public final class RavagerTargetController implements Runnable {
         }
 
         Player target = Bukkit.getPlayer(stored.get().targetId());
-        if (eligible(ravager, target)) {
+        if (eligible(ravager, target, followRangeSource.applyAsDouble(ravager))) {
             ravager.setTarget(target);
         } else if (ravager.getTarget() instanceof Player) {
             ravager.setTarget(null);
         }
     }
 
-    private static boolean eligible(Ravager ravager, Player target) {
-        AttributeInstance followRange = ravager.getAttribute(Attribute.FOLLOW_RANGE);
+    private static boolean eligible(Ravager ravager, Player target, double followRange) {
         if (target == null
                 || !target.isOnline()
                 || target.isDead()
                 || target.getWorld() != ravager.getWorld()
-                || followRange == null) {
+                || !Double.isFinite(followRange)
+                || followRange < 0.0) {
             return false;
         }
-        double range = followRange.getValue();
-        return ravager.getLocation().distanceSquared(target.getLocation()) <= range * range;
+        return ravager.getLocation().distanceSquared(target.getLocation())
+                <= followRange * followRange;
+    }
+
+    private static double followRange(Ravager ravager) {
+        AttributeInstance followRange = ravager.getAttribute(Attribute.FOLLOW_RANGE);
+        return followRange == null ? Double.NaN : followRange.getValue();
     }
 }

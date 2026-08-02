@@ -24,6 +24,7 @@ public final class RavagerSpawner {
     private final RavagerMetadataStore metadata;
     private final PrivateRavagerRegistry registry;
     private final Consumer<Ravager> afterRegistration;
+    private final SpawnOperation spawnOperation;
 
     public RavagerSpawner(
             Plugin plugin,
@@ -37,10 +38,20 @@ public final class RavagerSpawner {
             RavagerMetadataStore metadata,
             PrivateRavagerRegistry registry,
             Consumer<Ravager> afterRegistration) {
+        this(plugin, metadata, registry, afterRegistration, RavagerSpawner::spawnCustom);
+    }
+
+    RavagerSpawner(
+            Plugin plugin,
+            RavagerMetadataStore metadata,
+            PrivateRavagerRegistry registry,
+            Consumer<Ravager> afterRegistration,
+            SpawnOperation spawnOperation) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.metadata = Objects.requireNonNull(metadata, "metadata");
         this.registry = Objects.requireNonNull(registry, "registry");
         this.afterRegistration = Objects.requireNonNull(afterRegistration, "afterRegistration");
+        this.spawnOperation = Objects.requireNonNull(spawnOperation, "spawnOperation");
     }
 
     public SpawnResult spawn(Player shooter, Player target, RavagerSettings settings) {
@@ -66,12 +77,7 @@ public final class RavagerSpawner {
             RavagerAssignment assignment) {
         Ravager ravager = null;
         try {
-            ravager = location.getWorld().spawn(
-                    location,
-                    Ravager.class,
-                    SpawnReason.CUSTOM,
-                    true,
-                    spawned -> configure(spawned, settings));
+            ravager = spawnOperation.spawn(location, settings);
             metadata.write(ravager, assignment);
             registry.register(ravager);
             afterRegistration.accept(ravager);
@@ -101,6 +107,15 @@ public final class RavagerSpawner {
                 false));
     }
 
+    private static Ravager spawnCustom(Location location, RavagerSettings settings) {
+        return location.getWorld().spawn(
+                location,
+                Ravager.class,
+                SpawnReason.CUSTOM,
+                true,
+                ravager -> configure(ravager, settings));
+    }
+
     private static List<Location> findPositions(Location center, double radius) {
         World world = center.getWorld();
         int limit = (int) Math.ceil(radius);
@@ -126,9 +141,9 @@ public final class RavagerSpawner {
             int y = baseY + offset;
             Block ground = world.getBlockAt(x, y - 1, z);
             if (ground.getType().isSolid()
-                    && world.getBlockAt(x, y, z).isPassable()
-                    && world.getBlockAt(x, y + 1, z).isPassable()
-                    && world.getBlockAt(x, y + 2, z).isPassable()) {
+                    && world.getBlockAt(x, y, z).getType().isAir()
+                    && world.getBlockAt(x, y + 1, z).getType().isAir()
+                    && world.getBlockAt(x, y + 2, z).getType().isAir()) {
                 return java.util.Optional.of(new Location(world, x + 0.5, y, z + 0.5));
             }
         }
@@ -141,4 +156,9 @@ public final class RavagerSpawner {
     }
 
     public record SpawnResult(int requested, int spawned) {}
+
+    @FunctionalInterface
+    interface SpawnOperation {
+        Ravager spawn(Location location, RavagerSettings settings);
+    }
 }
