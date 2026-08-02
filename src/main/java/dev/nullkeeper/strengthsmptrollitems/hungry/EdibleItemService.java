@@ -2,6 +2,10 @@ package dev.nullkeeper.strengthsmptrollitems.hungry;
 
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig.EdibleSettings;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.Consumable;
+import io.papermc.paper.datacomponent.item.FoodProperties;
+import io.papermc.paper.datacomponent.item.consumable.ItemUseAnimation;
 import java.util.Objects;
 import java.util.function.Supplier;
 import org.bukkit.Material;
@@ -22,7 +26,29 @@ public final class EdibleItemService {
     }
 
     public ItemStack convert(ItemStack original) {
-        return items.markEdible(original);
+        return prepareForUse(items.markEdible(original));
+    }
+
+    public ItemStack prepareForUse(ItemStack marked) {
+        Objects.requireNonNull(marked, "marked");
+        if (!items.isEdible(marked)) {
+            throw new IllegalArgumentException("Only marked edible stacks can be prepared");
+        }
+
+        EdibleSettings settings = settingsSource.get();
+        ItemStack prepared = marked.clone();
+        prepared.setData(
+                DataComponentTypes.FOOD,
+                FoodProperties.food()
+                        .nutrition(settings.nutrition())
+                        .saturation(settings.saturation())
+                        .canAlwaysEat(true));
+        prepared.setData(
+                DataComponentTypes.CONSUMABLE,
+                Consumable.consumable()
+                        .consumeSeconds(settings.consumeDelayTicks() / 20.0f)
+                        .animation(ItemUseAnimation.EAT));
+        return prepared;
     }
 
     public boolean consume(Player player, EquipmentSlot slot) {
