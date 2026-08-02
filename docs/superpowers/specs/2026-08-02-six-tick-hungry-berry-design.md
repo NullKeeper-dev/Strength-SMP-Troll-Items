@@ -56,13 +56,13 @@ change only when troll items are newly issued.
 
 The project ships one universal jar for the complete supported matrix:
 
-| Platform | Minecraft version | API version in `plugin.yml` |
-| --- | --- | --- |
-| Paper | 26.1.1 | 26.1 |
-| Paper | 26.1.2 | 26.1 |
-| Paper | 26.2 | 26.2 |
-| Purpur | 26.1.2 | 26.1 |
-| Purpur | 26.2 | 26.2 |
+| Platform | Minecraft version |
+| --- | --- |
+| Paper | 26.1.1 |
+| Paper | 26.1.2 |
+| Paper | 26.2 |
+| Purpur | 26.1.2 |
+| Purpur | 26.2 |
 
 The universal jar compiles against the lowest supported API, Paper 26.1.1, and
 declares `api-version: '26.1'`. Its production code must use only API members
