@@ -1,6 +1,5 @@
 package dev.nullkeeper.strengthsmptrollitems;
 
-import com.comphenix.protocol.ProtocolManager;
 import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.command.GiveItemService;
 import dev.nullkeeper.strengthsmptrollitems.command.TrollItemsCommand;
@@ -13,7 +12,6 @@ import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
 import dev.nullkeeper.strengthsmptrollitems.ravager.PrivateRavagerRegistry;
 import dev.nullkeeper.strengthsmptrollitems.ravager.ProjectileHitTracker;
-import dev.nullkeeper.strengthsmptrollitems.ravager.ProtocolRavagerIsolation;
 import dev.nullkeeper.strengthsmptrollitems.ravager.RavagerAccessPolicy;
 import dev.nullkeeper.strengthsmptrollitems.ravager.RavagerLifecycleListener;
 import dev.nullkeeper.strengthsmptrollitems.ravager.RavagerMetadataStore;
@@ -39,23 +37,16 @@ import org.bukkit.scheduler.BukkitTask;
 
 public final class RuntimeComponents implements AutoCloseable {
     private final JavaPlugin plugin;
-    private final ProtocolRavagerIsolation protocolIsolation;
     private final BukkitTask targetTask;
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    private RuntimeComponents(
-            JavaPlugin plugin,
-            ProtocolRavagerIsolation protocolIsolation,
-            BukkitTask targetTask) {
+    private RuntimeComponents(JavaPlugin plugin, BukkitTask targetTask) {
         this.plugin = plugin;
-        this.protocolIsolation = protocolIsolation;
         this.targetTask = targetTask;
     }
 
-    public static RuntimeComponents start(JavaPlugin plugin, ProtocolManager protocolManager) {
+    public static RuntimeComponents start(JavaPlugin plugin) {
         Objects.requireNonNull(plugin, "plugin");
-        Objects.requireNonNull(protocolManager, "protocolManager");
-        ProtocolRavagerIsolation isolation = null;
         BukkitTask targetTask = null;
         try {
             ConfigService configs = configs(plugin);
@@ -82,21 +73,14 @@ public final class RuntimeComponents implements AutoCloseable {
                     metadata,
                     policy,
                     visibility);
-            isolation = new ProtocolRavagerIsolation(
-                    plugin,
-                    protocolManager,
-                    registry,
-                    metadata,
-                    policy);
-            isolation.start();
             targetTask = plugin.getServer().getScheduler().runTaskTimer(
                     plugin,
                     new DynamicTargetTask(plugin, configs, controller),
                     1L,
                     1L);
-            return new RuntimeComponents(plugin, isolation, targetTask);
+            return new RuntimeComponents(plugin, targetTask);
         } catch (RuntimeException exception) {
-            cleanupFailedStart(plugin, isolation, targetTask);
+            cleanupFailedStart(plugin, targetTask);
             throw exception;
         }
     }
@@ -179,13 +163,9 @@ public final class RuntimeComponents implements AutoCloseable {
 
     private static void cleanupFailedStart(
             JavaPlugin plugin,
-            ProtocolRavagerIsolation isolation,
             BukkitTask targetTask) {
         if (targetTask != null) {
             targetTask.cancel();
-        }
-        if (isolation != null) {
-            isolation.close();
         }
         HandlerList.unregisterAll(plugin);
         plugin.getServer().getScheduler().cancelTasks(plugin);
@@ -197,7 +177,6 @@ public final class RuntimeComponents implements AutoCloseable {
             return;
         }
         targetTask.cancel();
-        protocolIsolation.close();
         HandlerList.unregisterAll(plugin);
         plugin.getServer().getScheduler().cancelTasks(plugin);
     }

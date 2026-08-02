@@ -201,7 +201,7 @@ git commit -m "Trigger troll items on valid damage ticks"
 - `RavagerVisibilityService.refresh(Ravager)` establishes hidden-by-default state, then shows only shooter and target.
 - `RuntimeComponents.start(JavaPlugin) -> RuntimeComponents` has no external dependency argument.
 
-- [ ] **Step 1: Write failing native-visibility tests**
+- [x] **Step 1: Write failing native-visibility tests**
 
 Extend visibility and lifecycle tests with these assertions:
 
@@ -225,13 +225,13 @@ Update the injected spawner operation so the production initializer is exercised
 
 Assert a spawned private Ravager is persistent, non-despawning, non-collidable, and `isVisibleByDefault() == false` before participant refresh results are inspected. Assert startup/chunk-load recovery also resets a marked Ravager to hidden-by-default.
 
-- [ ] **Step 2: Run visibility tests and confirm red**
+- [x] **Step 2: Run visibility tests and confirm red**
 
 Run: `.\gradlew.bat test --tests "*.RavagerVisibilityServiceTest" --tests "*.RavagerLifecycleListenerTest"`
 
 Expected: compilation or assertions fail because the spawn seam and native default visibility are not implemented.
 
-- [ ] **Step 3: Move visibility into the pre-spawn initializer**
+- [x] **Step 3: Move visibility into the pre-spawn initializer**
 
 Change `SpawnOperation` to accept `Consumer<Ravager>`. Production spawning remains `SpawnReason.CUSTOM` and applies this initializer in Paper's spawn consumer:
 
@@ -261,7 +261,13 @@ private static Ravager spawnCustom(Location location, Consumer<Ravager> initiali
 
 Call `spawnOperation.spawn(location, ravager -> configure(ravager, settings))`. In `RavagerVisibilityService.refresh(Ravager)` and lifecycle recovery, call `setVisibleByDefault(false)` before show/hide decisions. Continue using `showEntity` for participants and `hideEntity` for outsiders. Keep `RavagerProtectionListener` unchanged as server-side defense.
 
-- [ ] **Step 4: Write failing dependency-free lifecycle tests**
+Implementation note: MockBukkit 4.114.0 throws for both native default
+visibility and Ravager despawn configuration. Small injected platform seams
+therefore verify that refresh and pre-spawn initialization are requested;
+the concrete Paper operations remain covered by compilation and the live
+startup/manual matrix.
+
+- [x] **Step 4: Write failing dependency-free lifecycle tests**
 
 Update `PluginDescriptorTest` to assert `descriptor.getStringList("depend")` is empty. Update `PluginIntegrationTest` to load `StrengthSmpTrollItemsPlugin.class` without creating a ProtocolLib mock or proxy and assert enable/disable still registers listeners and cleans tasks.
 
@@ -272,7 +278,7 @@ server.getPluginManager().disablePlugin(plugin);
 assertFalse(plugin.isEnabled());
 ```
 
-- [ ] **Step 5: Remove ProtocolLib from production and tests**
+- [x] **Step 5: Remove ProtocolLib from production and tests**
 
 Delete both `ProtocolRavagerIsolation` files. Remove ProtocolLib imports, override constructors, manager lookup, startup, close, and failure cleanup. Make the plugin entrypoint a normal no-argument `JavaPlugin` and call `RuntimeComponents.start(this)`. Delete `depend: [ProtocolLib]` from `plugin.yml`.
 
@@ -289,7 +295,7 @@ dependencies {
 }
 ```
 
-- [ ] **Step 6: Run focused and full tests**
+- [x] **Step 6: Run focused and full tests**
 
 Run:
 
@@ -300,7 +306,7 @@ Run:
 
 Expected: the plugin loads with no ProtocolLib plugin present, native visibility tests pass, and the full suite has no ProtocolLib imports or tests.
 
-- [ ] **Step 7: Update changelog, review, and commit**
+- [x] **Step 7: Update changelog, review, and commit**
 
 Add Paper/Purpur-only support, native visual privacy, accepted sound leakage, and ProtocolLib removal to the existing pending `1.0.0` section. Run `rg -n "ProtocolLib|org\.spigotmc|hub\.spigotmc" build.gradle.kts src` and expect no matches. Run `git diff --check`, scan changed files for credentials, then commit:
 

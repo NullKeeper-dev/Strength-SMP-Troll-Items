@@ -2,6 +2,9 @@ package dev.nullkeeper.strengthsmptrollitems.ravager;
 
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.entity.Ravager;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
@@ -36,6 +39,7 @@ class RavagerLifecycleListenerTest {
     private RavagerMetadataStore metadata;
     private PrivateRavagerRegistry registry;
     private RavagerLifecycleListener lifecycle;
+    private Set<UUID> hiddenByDefault;
 
     @BeforeEach
     void setUp() {
@@ -50,11 +54,13 @@ class RavagerLifecycleListenerTest {
         metadata = new RavagerMetadataStore(new PersistentKeys(plugin));
         metadata.write(marked, assignment);
         registry = new PrivateRavagerRegistry();
+        hiddenByDefault = new HashSet<>();
         RavagerVisibilityService visibility = new RavagerVisibilityService(
                 plugin,
                 registry,
                 metadata,
-                new RavagerAccessPolicy());
+                new RavagerAccessPolicy(),
+                candidate -> hiddenByDefault.add(candidate.getUniqueId()));
         lifecycle = new RavagerLifecycleListener(plugin, registry, metadata, visibility);
     }
 
@@ -69,6 +75,7 @@ class RavagerLifecycleListenerTest {
 
         assertTrue(registry.find(marked.getUniqueId()).isPresent());
         assertFalse(registry.find(ordinary.getUniqueId()).isPresent());
+        assertTrue(hiddenByDefault.contains(marked.getUniqueId()));
         assertFalse(outsider.canSee(marked));
     }
 
@@ -78,6 +85,7 @@ class RavagerLifecycleListenerTest {
 
         assertTrue(registry.find(marked.getUniqueId()).isPresent());
         assertFalse(registry.find(ordinary.getUniqueId()).isPresent());
+        assertTrue(hiddenByDefault.contains(marked.getUniqueId()));
     }
 
     @Test

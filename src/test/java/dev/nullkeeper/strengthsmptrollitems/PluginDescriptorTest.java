@@ -3,12 +3,12 @@ package dev.nullkeeper.strengthsmptrollitems;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PluginDescriptorTest {
     @Test
@@ -19,7 +19,7 @@ class PluginDescriptorTest {
         assertEquals(StrengthSmpTrollItemsPlugin.class.getName(), descriptor.getString("main"));
         assertEquals(System.getProperty("projectVersion"), descriptor.getString("version"));
         assertEquals("26.1", descriptor.getString("api-version"));
-        assertEquals(List.of("ProtocolLib"), descriptor.getStringList("depend"));
+        assertTrue(descriptor.getStringList("depend").isEmpty());
         assertNotNull(descriptor.getConfigurationSection("commands.trollitems"));
         assertEquals("op", descriptor.getString("permissions.trollitems.give.default"));
         assertEquals("op", descriptor.getString("permissions.trollitems.reload.default"));

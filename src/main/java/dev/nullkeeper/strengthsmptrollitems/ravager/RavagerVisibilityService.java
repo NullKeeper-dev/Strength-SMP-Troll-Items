@@ -12,16 +12,27 @@ public final class RavagerVisibilityService {
     private final PrivateRavagerRegistry registry;
     private final RavagerMetadataStore metadata;
     private final RavagerAccessPolicy policy;
+    private final RavagerDefaultVisibility defaultVisibility;
 
     public RavagerVisibilityService(
             Plugin plugin,
             PrivateRavagerRegistry registry,
             RavagerMetadataStore metadata,
             RavagerAccessPolicy policy) {
+        this(plugin, registry, metadata, policy, RavagerDefaultVisibility.paper());
+    }
+
+    RavagerVisibilityService(
+            Plugin plugin,
+            PrivateRavagerRegistry registry,
+            RavagerMetadataStore metadata,
+            RavagerAccessPolicy policy,
+            RavagerDefaultVisibility defaultVisibility) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.registry = Objects.requireNonNull(registry, "registry");
         this.metadata = Objects.requireNonNull(metadata, "metadata");
         this.policy = Objects.requireNonNull(policy, "policy");
+        this.defaultVisibility = Objects.requireNonNull(defaultVisibility, "defaultVisibility");
     }
 
     public void refresh(Ravager ravager) {
@@ -29,6 +40,7 @@ public final class RavagerVisibilityService {
         if (assignment.isEmpty()) {
             return;
         }
+        defaultVisibility.hide(ravager);
         for (Player viewer : Bukkit.getOnlinePlayers()) {
             apply(viewer, ravager, assignment.get());
         }

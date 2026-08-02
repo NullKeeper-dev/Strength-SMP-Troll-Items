@@ -15,8 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Ravager;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 public final class RavagerSpawner {
     private static final int VERTICAL_SEARCH = 3;
@@ -25,6 +23,7 @@ public final class RavagerSpawner {
     private final RavagerMetadataStore metadata;
     private final PrivateRavagerRegistry registry;
     private final Consumer<Ravager> afterRegistration;
+    private final RavagerInitializer initializer;
     private final SpawnOperation spawnOperation;
 
     public RavagerSpawner(
@@ -39,7 +38,13 @@ public final class RavagerSpawner {
             RavagerMetadataStore metadata,
             PrivateRavagerRegistry registry,
             Consumer<Ravager> afterRegistration) {
-        this(plugin, metadata, registry, afterRegistration, RavagerSpawner::spawnCustom);
+        this(
+                plugin,
+                metadata,
+                registry,
+                afterRegistration,
+                RavagerInitializer.paper(),
+                RavagerSpawner::spawnCustom);
     }
 
     RavagerSpawner(
@@ -47,11 +52,13 @@ public final class RavagerSpawner {
             RavagerMetadataStore metadata,
             PrivateRavagerRegistry registry,
             Consumer<Ravager> afterRegistration,
+            RavagerInitializer initializer,
             SpawnOperation spawnOperation) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.metadata = Objects.requireNonNull(metadata, "metadata");
         this.registry = Objects.requireNonNull(registry, "registry");
         this.afterRegistration = Objects.requireNonNull(afterRegistration, "afterRegistration");
+        this.initializer = Objects.requireNonNull(initializer, "initializer");
         this.spawnOperation = Objects.requireNonNull(spawnOperation, "spawnOperation");
     }
 
@@ -78,7 +85,9 @@ public final class RavagerSpawner {
             RavagerAssignment assignment) {
         Ravager ravager = null;
         try {
-            ravager = spawnOperation.spawn(location, settings);
+            ravager = spawnOperation.spawn(
+                    location,
+                    spawned -> initializer.initialize(spawned, settings));
             metadata.write(ravager, assignment);
             registry.register(ravager);
             afterRegistration.accept(ravager);
@@ -96,25 +105,13 @@ public final class RavagerSpawner {
         }
     }
 
-    private static void configure(Ravager ravager, RavagerSettings settings) {
-        ravager.setPersistent(true);
-        ravager.setRemoveWhenFarAway(false);
-        ravager.setCollidable(false);
-        ravager.addPotionEffect(new PotionEffect(
-                PotionEffectType.SPEED,
-                PotionEffect.INFINITE_DURATION,
-                settings.speedLevel() - 1,
-                false,
-                false));
-    }
-
-    private static Ravager spawnCustom(Location location, RavagerSettings settings) {
+    private static Ravager spawnCustom(Location location, Consumer<Ravager> initializer) {
         return location.getWorld().spawn(
                 location,
                 Ravager.class,
                 SpawnReason.CUSTOM,
                 true,
-                ravager -> configure(ravager, settings));
+                initializer);
     }
 
     private static List<Location> findPositions(Location center, double radius) {
@@ -160,6 +157,6 @@ public final class RavagerSpawner {
 
     @FunctionalInterface
     interface SpawnOperation {
-        Ravager spawn(Location location, RavagerSettings settings);
+        Ravager spawn(Location location, Consumer<Ravager> initializer);
     }
 }

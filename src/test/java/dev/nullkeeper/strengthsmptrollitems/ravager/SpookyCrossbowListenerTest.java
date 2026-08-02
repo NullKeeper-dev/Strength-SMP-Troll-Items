@@ -76,7 +76,12 @@ class SpookyCrossbowListenerTest {
                 metadata,
                 registry,
                 ravager -> {},
-                (location, settings) -> location.getWorld().spawn(location, Ravager.class));
+                (ravager, settings) -> {},
+                (location, initializer) -> {
+                    Ravager spawned = location.getWorld().spawn(location, Ravager.class);
+                    initializer.accept(spawned);
+                    return spawned;
+                });
         listener = new SpookyCrossbowListener(
                 items,
                 tracker,

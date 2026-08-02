@@ -2,6 +2,10 @@ package dev.nullkeeper.strengthsmptrollitems.ravager;
 
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig.RavagerSettings;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.bukkit.Material;
 import org.bukkit.entity.Ravager;
 import org.junit.jupiter.api.AfterEach;
@@ -13,6 +17,7 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.mockbukkit.mockbukkit.plugin.PluginMock;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RavagerVisibilityServiceTest {
@@ -24,6 +29,7 @@ class RavagerVisibilityServiceTest {
     private RavagerMetadataStore metadata;
     private PrivateRavagerRegistry registry;
     private RavagerVisibilityService visibility;
+    private Set<UUID> hiddenByDefault;
 
     @BeforeEach
     void setUp() {
@@ -40,11 +46,13 @@ class RavagerVisibilityServiceTest {
                 target.getUniqueId()));
         registry = new PrivateRavagerRegistry();
         registry.register(ravager);
+        hiddenByDefault = new HashSet<>();
         visibility = new RavagerVisibilityService(
                 plugin,
                 registry,
                 metadata,
-                new RavagerAccessPolicy());
+                new RavagerAccessPolicy(),
+                candidate -> hiddenByDefault.add(candidate.getUniqueId()));
     }
 
     @AfterEach
@@ -56,6 +64,7 @@ class RavagerVisibilityServiceTest {
     void refreshShowsParticipantsAndHidesOutsiders() {
         visibility.refresh(ravager);
 
+        assertTrue(hiddenByDefault.contains(ravager.getUniqueId()));
         assertTrue(shooter.canSee(ravager));
         assertTrue(target.canSee(ravager));
         assertFalse(outsider.canSee(ravager));
@@ -85,12 +94,21 @@ class RavagerVisibilityServiceTest {
                 shooter.getLocation().getBlockX(),
                 shooter.getLocation().getBlockY() - 1,
                 shooter.getLocation().getBlockZ()).setType(Material.STONE);
+        AtomicReference<RavagerSettings> initializedSettings = new AtomicReference<>();
         RavagerSpawner spawner = new RavagerSpawner(
                 plugin,
                 metadata,
                 registry,
                 visibility::refresh,
-                (location, settings) -> location.getWorld().spawn(location, Ravager.class));
+                (candidate, settings) -> {
+                    hiddenByDefault.add(candidate.getUniqueId());
+                    initializedSettings.set(settings);
+                },
+                (location, initializer) -> {
+                    Ravager spawned = location.getWorld().spawn(location, Ravager.class);
+                    initializer.accept(spawned);
+                    return spawned;
+                });
 
         spawner.spawn(shooter.getUniqueId(), target, new RavagerSettings(1, 2, 1.0, 20));
 
@@ -98,6 +116,8 @@ class RavagerVisibilityServiceTest {
                 .filter(candidate -> candidate != ravager)
                 .findFirst()
                 .orElseThrow();
+        assertTrue(hiddenByDefault.contains(spawned.getUniqueId()));
+        assertEquals(new RavagerSettings(1, 2, 1.0, 20), initializedSettings.get());
         assertFalse(outsider.canSee(spawned));
     }
 }

@@ -5,7 +5,6 @@ api-version: '26.1'
 description: Three configurable troll items inspired by Strength SMP VS Admin Items.
 author: NullKeeper-dev
 website: https://modrinth.com/project/strength-smp-troll-items
-depend: [ProtocolLib]
 
 commands:
   trollitems:
