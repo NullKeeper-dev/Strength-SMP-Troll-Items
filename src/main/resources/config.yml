@@ -28,6 +28,9 @@ edible:
   saturation: 0.0
   consume-delay-ticks: 6
 
+update-checker:
+  enabled: true
+
 messages:
   no-permission: "&cYou do not have permission to use this command."
   usage: "&eUsage: /trollitems give <player> <resizing_sword|spooky_crossbow|hungry_berry> [amount] or /trollitems reload"
@@ -46,3 +49,5 @@ messages:
   unsupported-target: "&cThat living entity does not expose Minecraft's scale attribute."
   empty-hand: "&e{target} is not holding an item in their main hand."
   partial-ravager-spawn: "&eOnly {spawned} of {requested} Ravagers could be summoned."
+  update-available: "&eStrength SMP Troll Items {current} is outdated. Version {latest} is available: {url}"
+  update-disable-hint: "&7Disable update alerts with update-checker.enabled: false in config.yml."

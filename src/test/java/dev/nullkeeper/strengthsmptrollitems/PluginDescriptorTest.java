@@ -23,6 +23,7 @@ class PluginDescriptorTest {
         assertNotNull(descriptor.getConfigurationSection("commands.trollitems"));
         assertEquals("op", descriptor.getString("permissions.trollitems.give.default"));
         assertEquals("op", descriptor.getString("permissions.trollitems.reload.default"));
+        assertEquals("op", descriptor.getString("permissions.trollitems.update-notify.default"));
     }
 
     private static YamlConfiguration descriptor() {

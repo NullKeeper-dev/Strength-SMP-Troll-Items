@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigLoaderTest {
     private final ConfigLoader loader = new ConfigLoader();
@@ -33,6 +34,13 @@ class ConfigLoaderTest {
         assertEquals(0, config.edible().nutrition());
         assertEquals(0.0F, config.edible().saturation());
         assertEquals(6, config.edible().consumeDelayTicks());
+        assertTrue(config.updateChecker().enabled());
+        assertEquals(
+                "&eStrength SMP Troll Items {current} is outdated. Version {latest} is available: {url}",
+                config.messages().updateAvailable());
+        assertEquals(
+                "&7Disable update alerts with update-checker.enabled: false in config.yml.",
+                config.messages().updateDisableHint());
         assertEquals("&e&lResizing Sword", config.items().get(TrollItemType.RESIZING_SWORD).name());
         assertEquals(2, config.items().get(TrollItemType.HUNGRY_BERRY).lore().size());
         assertEquals("&e{target}'s size is now {size}", config.messages().resizeSuccess());
@@ -46,6 +54,7 @@ class ConfigLoaderTest {
         assertEquals(5, config.ravagers().perHit());
         assertEquals(0, config.edible().nutrition());
         assertEquals(6, config.edible().consumeDelayTicks());
+        assertTrue(config.updateChecker().enabled());
         assertEquals("&5&lSpooky Crossbow", config.items().get(TrollItemType.SPOOKY_CROSSBOW).name());
     }
 
@@ -69,6 +78,14 @@ class ConfigLoaderTest {
 
         assertFalse(result.successful());
         assertSame(before, service.current());
+    }
+
+    @Test
+    void updateCheckerEnabledMustBeBoolean() {
+        YamlConfiguration yaml = defaultYaml();
+        yaml.set("update-checker.enabled", "yes");
+
+        assertThrows(ConfigException.class, () -> loader.load(yaml));
     }
 
     @Test

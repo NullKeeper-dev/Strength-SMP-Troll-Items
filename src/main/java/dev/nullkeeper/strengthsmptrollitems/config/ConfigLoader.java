@@ -5,6 +5,7 @@ import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig.ItemPresentation
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig.Messages;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig.RavagerSettings;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig.ResizeSettings;
+import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig.UpdateCheckerSettings;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
 import java.util.EnumMap;
 import java.util.List;
@@ -49,6 +50,8 @@ public final class ConfigLoader {
             "edible.nutrition",
             "edible.saturation",
             "edible.consume-delay-ticks",
+            "update-checker",
+            "update-checker.enabled",
             "messages",
             "messages.no-permission",
             "messages.usage",
@@ -66,7 +69,9 @@ public final class ConfigLoader {
             "messages.resize-success",
             "messages.unsupported-target",
             "messages.empty-hand",
-            "messages.partial-ravager-spawn");
+            "messages.partial-ravager-spawn",
+            "messages.update-available",
+            "messages.update-disable-hint");
     private final Consumer<String> warningSink;
 
     public ConfigLoader() {
@@ -111,6 +116,7 @@ public final class ConfigLoader {
                 new ResizeSettings(resizeStep),
                 new RavagerSettings(perHit, speedLevel, spawnRadius, retargetTicks),
                 new EdibleSettings(nutrition, (float) saturationValue, consumeTicks),
+                new UpdateCheckerSettings(bool(root, "update-checker.enabled", true)),
                 loadMessages(root));
         warnUnknownKeys(root);
         return loaded;
@@ -147,7 +153,9 @@ public final class ConfigLoader {
                 string(root, "messages.resize-success", "&e{target}'s size is now {size}"),
                 string(root, "messages.unsupported-target", "&cThat living entity does not expose Minecraft's scale attribute."),
                 string(root, "messages.empty-hand", "&e{target} is not holding an item in their main hand."),
-                string(root, "messages.partial-ravager-spawn", "&eOnly {spawned} of {requested} Ravagers could be summoned."));
+                string(root, "messages.partial-ravager-spawn", "&eOnly {spawned} of {requested} Ravagers could be summoned."),
+                string(root, "messages.update-available", "&eStrength SMP Troll Items {current} is outdated. Version {latest} is available: {url}"),
+                string(root, "messages.update-disable-hint", "&7Disable update alerts with update-checker.enabled: false in config.yml."));
     }
 
     private static String string(ConfigurationSection root, String path, String defaultValue) {
@@ -192,6 +200,17 @@ public final class ConfigLoader {
             throw new ConfigException(path + " must be a whole number");
         }
         return number.intValue();
+    }
+
+    private static boolean bool(ConfigurationSection root, String path, boolean defaultValue) {
+        Object value = root.get(path);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (!(value instanceof Boolean flag)) {
+            throw new ConfigException(path + " must be true or false");
+        }
+        return flag;
     }
 
     private static double decimal(ConfigurationSection root, String path, double defaultValue) {

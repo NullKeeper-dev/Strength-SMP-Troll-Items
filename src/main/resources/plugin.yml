@@ -18,3 +18,6 @@ permissions:
   trollitems.reload:
     description: Reload the troll item configuration.
     default: op
+  trollitems.update-notify:
+    description: Receive available-update notices after joining.
+    default: op

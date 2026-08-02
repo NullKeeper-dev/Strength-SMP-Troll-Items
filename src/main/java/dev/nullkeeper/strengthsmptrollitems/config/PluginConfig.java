@@ -10,6 +10,7 @@ public record PluginConfig(
         ResizeSettings resize,
         RavagerSettings ravagers,
         EdibleSettings edible,
+        UpdateCheckerSettings updateChecker,
         Messages messages) {
 
     public PluginConfig {
@@ -17,6 +18,7 @@ public record PluginConfig(
         resize = Objects.requireNonNull(resize, "resize");
         ravagers = Objects.requireNonNull(ravagers, "ravagers");
         edible = Objects.requireNonNull(edible, "edible");
+        updateChecker = Objects.requireNonNull(updateChecker, "updateChecker");
         messages = Objects.requireNonNull(messages, "messages");
     }
 
@@ -40,6 +42,8 @@ public record PluginConfig(
             float saturation,
             int consumeDelayTicks) {}
 
+    public record UpdateCheckerSettings(boolean enabled) {}
+
     public record Messages(
             String noPermission,
             String usage,
@@ -57,7 +61,9 @@ public record PluginConfig(
             String resizeSuccess,
             String unsupportedTarget,
             String emptyHand,
-            String partialRavagerSpawn) {
+            String partialRavagerSpawn,
+            String updateAvailable,
+            String updateDisableHint) {
 
         public Messages {
             Objects.requireNonNull(noPermission, "noPermission");
@@ -77,6 +83,8 @@ public record PluginConfig(
             Objects.requireNonNull(unsupportedTarget, "unsupportedTarget");
             Objects.requireNonNull(emptyHand, "emptyHand");
             Objects.requireNonNull(partialRavagerSpawn, "partialRavagerSpawn");
+            Objects.requireNonNull(updateAvailable, "updateAvailable");
+            Objects.requireNonNull(updateDisableHint, "updateDisableHint");
         }
     }
 }
