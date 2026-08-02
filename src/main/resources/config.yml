@@ -1,0 +1,46 @@
+items:
+  resizing-sword:
+    name: "&e&lResizing Sword"
+    lore:
+      - "&7Attack to grow target"
+      - "&7Sneak + Attack to shrink target"
+  spooky-crossbow:
+    name: "&5&lSpooky Crossbow"
+    lore:
+      - "&7Shoot a player to summon their fears."
+  hungry-berry:
+    name: "&#FFA500&lHungry Berry"
+    lore:
+      - "&7Do not eat."
+      - "&7Hit a player to make their held item edible."
+
+resize:
+  step: 0.05
+
+ravagers:
+  per-hit: 5
+  speed-level: 2
+  spawn-radius: 6.0
+  retarget-interval-ticks: 20
+
+edible:
+  nutrition: 0
+  saturation: 0.0
+  consume-delay-ticks: 0
+
+messages:
+  no-permission: "&cYou do not have permission to use this command."
+  usage: "&eUsage: /trollitems give <player> <resizing_sword|spooky_crossbow|hungry_berry> [amount] or /trollitems reload"
+  player-not-found: "&cPlayer '{player}' is not online."
+  unknown-item: "&cUnknown troll item '{item}'."
+  invalid-amount: "&cAmount must be a whole number from 1 through 64."
+  give-success: "&aGave {amount} {item} to {player}."
+  give-received: "&aYou received {amount} {item}."
+  inventory-overflow: "&e{amount} item(s) did not fit and were dropped at {player}'s location."
+  reload-success: "&aStrength SMP Troll Items configuration reloaded."
+  reload-failure: "&cReload failed; the previous configuration is still active. Check the console."
+  internal-error: "&cThe command failed unexpectedly. Check the server console."
+  resize-success: "&e{target}'s size is now {size}"
+  unsupported-target: "&cThat living entity does not expose Minecraft's scale attribute."
+  empty-hand: "&e{target} is not holding an item in their main hand."
+  partial-ravager-spawn: "&eOnly {spawned} of {requested} Ravagers could be summoned."

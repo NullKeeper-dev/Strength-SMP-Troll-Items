@@ -1,0 +1,21 @@
+name: StrengthSmpTrollItems
+version: '${version}'
+main: dev.nullkeeper.strengthsmptrollitems.StrengthSmpTrollItemsPlugin
+api-version: '26.1'
+description: Three configurable troll items inspired by Strength SMP VS Admin Items.
+author: NullKeeper-dev
+website: https://modrinth.com/project/strength-smp-troll-items
+depend: [ProtocolLib]
+
+commands:
+  trollitems:
+    description: Give or reload Strength SMP Troll Items.
+    usage: /trollitems <give|reload>
+
+permissions:
+  trollitems.give:
+    description: Give a troll item to a player.
+    default: op
+  trollitems.reload:
+    description: Reload the troll item configuration.
+    default: op
