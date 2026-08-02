@@ -2,6 +2,7 @@ package dev.nullkeeper.strengthsmptrollitems.ravager;
 
 import dev.nullkeeper.strengthsmptrollitems.config.ConfigLoader;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig;
+import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -36,6 +38,7 @@ import org.mockbukkit.mockbukkit.plugin.PluginMock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static dev.nullkeeper.strengthsmptrollitems.combat.DamageEventFixtures.zeroFinalDamage;
 
 @SuppressWarnings({"deprecation", "removal"})
 class SpookyCrossbowListenerTest {
@@ -74,7 +77,12 @@ class SpookyCrossbowListenerTest {
                 registry,
                 ravager -> {},
                 (location, settings) -> location.getWorld().spawn(location, Ravager.class));
-        listener = new SpookyCrossbowListener(items, tracker, spawner, () -> config);
+        listener = new SpookyCrossbowListener(
+                items,
+                tracker,
+                spawner,
+                new DamageTickPolicy(),
+                () -> config);
     }
 
     @AfterEach
@@ -142,12 +150,51 @@ class SpookyCrossbowListenerTest {
     }
 
     @Test
-    void cancelledZeroDamageAndNonPlayerVictimsDoNotSpawn() {
+    void zeroFinalDamageHitStillSpawnsRavagers() {
         Arrow arrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
-        EntityDamageByEntityEvent cancelled = damage(arrow, target, 1.0);
+
+        listener.onDamage(zeroFinalDamage(arrow, target, DamageCause.PROJECTILE));
+
+        assertEquals(5, registry.snapshot().size());
+    }
+
+    @Test
+    void sharedDamageTickRejectionsDoNotSpawn() {
+        Arrow cancelledArrow = shoot(
+                shooter,
+                items.create(TrollItemType.SPOOKY_CROSSBOW, config));
+        EntityDamageByEntityEvent cancelled = damage(cancelledArrow, target, 1.0);
         cancelled.setCancelled(true);
         listener.onDamage(cancelled);
-        listener.onDamage(damage(arrow, target, 0.0));
+
+        Arrow zeroArrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
+        listener.onDamage(damage(zeroArrow, target, 0.0));
+
+        target.setGameMode(GameMode.CREATIVE);
+        Arrow creativeArrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
+        listener.onDamage(damage(creativeArrow, target, 1.0));
+        target.setGameMode(GameMode.SPECTATOR);
+        Arrow spectatorArrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
+        listener.onDamage(damage(spectatorArrow, target, 1.0));
+        target.setGameMode(GameMode.SURVIVAL);
+
+        target.setInvulnerable(true);
+        Arrow invulnerableArrow = shoot(
+                shooter,
+                items.create(TrollItemType.SPOOKY_CROSSBOW, config));
+        listener.onDamage(damage(invulnerableArrow, target, 1.0));
+        target.setInvulnerable(false);
+
+        target.setNoDamageTicks(5);
+        Arrow repeatArrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
+        listener.onDamage(damage(repeatArrow, target, 1.0));
+
+        assertTrue(registry.snapshot().isEmpty());
+    }
+
+    @Test
+    void nonPlayerVictimDoesNotSpawn() {
+        Arrow arrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
         LivingEntity cow = (LivingEntity) target.getWorld().spawnEntity(
                 target.getLocation(),
                 EntityType.COW);

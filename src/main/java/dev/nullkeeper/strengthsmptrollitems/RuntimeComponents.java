@@ -1,6 +1,7 @@
 package dev.nullkeeper.strengthsmptrollitems;
 
 import com.comphenix.protocol.ProtocolManager;
+import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.command.GiveItemService;
 import dev.nullkeeper.strengthsmptrollitems.command.TrollItemsCommand;
 import dev.nullkeeper.strengthsmptrollitems.config.ConfigLoader;
@@ -135,6 +136,7 @@ public final class RuntimeComponents implements AutoCloseable {
         ScaleService scales = new ScaleService(
                 keys,
                 warning -> plugin.getLogger().warning(warning));
+        DamageTickPolicy damageTicks = new DamageTickPolicy();
         ScalePersistenceListener scalePersistence = new ScalePersistenceListener(plugin, scales);
         EdibleItemService edibles = new EdibleItemService(
                 items,
@@ -150,9 +152,9 @@ public final class RuntimeComponents implements AutoCloseable {
                 metadata,
                 visibility);
         List<Listener> listeners = List.of(
-                new ResizingSwordListener(items, scales, configs::current),
+                new ResizingSwordListener(items, scales, damageTicks, configs::current),
                 scalePersistence,
-                new HungryBerryListener(items, edibles, configs::current),
+                new HungryBerryListener(items, edibles, damageTicks, configs::current),
                 new EdibleInteractionListener(
                         plugin,
                         items,
@@ -164,6 +166,7 @@ public final class RuntimeComponents implements AutoCloseable {
                                 keys,
                                 warning -> plugin.getLogger().warning(warning)),
                         spawner,
+                        damageTicks,
                         configs::current),
                 new RavagerProtectionListener(metadata, policy),
                 lifecycle);

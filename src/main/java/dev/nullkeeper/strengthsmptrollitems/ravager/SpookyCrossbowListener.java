@@ -1,5 +1,6 @@
 package dev.nullkeeper.strengthsmptrollitems.ravager;
 
+import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
@@ -22,16 +23,19 @@ public final class SpookyCrossbowListener implements Listener {
     private final TrollItemService items;
     private final ProjectileHitTracker tracker;
     private final RavagerSpawner spawner;
+    private final DamageTickPolicy damageTicks;
     private final Supplier<PluginConfig> configSource;
 
     public SpookyCrossbowListener(
             TrollItemService items,
             ProjectileHitTracker tracker,
             RavagerSpawner spawner,
+            DamageTickPolicy damageTicks,
             Supplier<PluginConfig> configSource) {
         this.items = Objects.requireNonNull(items, "items");
         this.tracker = Objects.requireNonNull(tracker, "tracker");
         this.spawner = Objects.requireNonNull(spawner, "spawner");
+        this.damageTicks = Objects.requireNonNull(damageTicks, "damageTicks");
         this.configSource = Objects.requireNonNull(configSource, "configSource");
     }
 
@@ -46,10 +50,9 @@ public final class SpookyCrossbowListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
-        if (event.isCancelled()
-                || event.getFinalDamage() <= 0.0
-                || !(event.getDamager() instanceof Projectile projectile)
-                || !(event.getEntity() instanceof Player target)) {
+        if (!(event.getDamager() instanceof Projectile projectile)
+                || !(event.getEntity() instanceof Player target)
+                || !damageTicks.qualifies(event, target)) {
             return;
         }
         UUID shooterId = tracker.shooterId(projectile).orElse(null);

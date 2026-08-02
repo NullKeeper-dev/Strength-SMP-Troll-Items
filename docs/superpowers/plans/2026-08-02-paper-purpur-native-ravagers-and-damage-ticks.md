@@ -58,7 +58,7 @@
 - Consumers: the three hit listeners receive one `DamageTickPolicy` in their constructors.
 - Eligibility: uncancelled, `event.getDamage() > 0.0`, target not invulnerable, `target.getNoDamageTicks() == 0`, and player target not in Creative or Spectator.
 
-- [ ] **Step 1: Write failing policy tests**
+- [x] **Step 1: Write failing policy tests**
 
 Create tests for positive raw damage, zero final damage, cancelled events, zero raw damage, Creative, Spectator, explicit invulnerability, and positive no-damage ticks. Use an event subclass to prove final damage is ignored:
 
@@ -84,13 +84,13 @@ void immunityWindowRepeatDoesNotQualify() {
 }
 ```
 
-- [ ] **Step 2: Run the policy test and confirm red**
+- [x] **Step 2: Run the policy test and confirm red**
 
 Run: `.\gradlew.bat test --tests "*.DamageTickPolicyTest"`
 
 Expected: test compilation fails because `DamageTickPolicy` does not exist.
 
-- [ ] **Step 3: Implement the minimal policy**
+- [x] **Step 3: Implement the minimal policy**
 
 ```java
 package dev.nullkeeper.strengthsmptrollitems.combat;
@@ -120,13 +120,13 @@ public final class DamageTickPolicy {
 }
 ```
 
-- [ ] **Step 4: Run the policy test and confirm green**
+- [x] **Step 4: Run the policy test and confirm green**
 
 Run: `.\gradlew.bat test --tests "*.DamageTickPolicyTest"`
 
 Expected: every policy case passes.
 
-- [ ] **Step 5: Write failing listener integration tests**
+- [x] **Step 5: Write failing listener integration tests**
 
 Replace each former “zero damage does nothing” assertion. For every feature, pass an event with raw damage `1.0` and overridden final damage `0.0`, then assert the scale changes, held stack converts, or five Ravagers spawn. Retain separate assertions proving cancellation, zero raw damage, Creative/Spectator, invulnerability, and `setNoDamageTicks(5)` do nothing.
 
@@ -140,7 +140,7 @@ listener.onDamage(zeroFinalDamage(attacker, target));
 assertEquals(1.05, target.getAttribute(scaleAttribute).getBaseValue());
 ```
 
-- [ ] **Step 6: Inject and use the policy in all three listeners**
+- [x] **Step 6: Inject and use the policy in all three listeners**
 
 Add `DamageTickPolicy damageTicks` to each constructor and replace every `event.getFinalDamage() <= 0.0` condition with `!damageTicks.qualifies(event, target)`. In `RuntimeComponents.registerListeners`, create one `DamageTickPolicy` and pass it to `ResizingSwordListener`, `HungryBerryListener`, and `SpookyCrossbowListener`.
 
@@ -154,11 +154,11 @@ if (!(event.getDamager() instanceof Player attacker)
 }
 ```
 
-- [ ] **Step 7: Apply the approved version and pending changelog**
+- [x] **Step 7: Apply the approved version and pending changelog**
 
 Set `version=1.0.0` in `gradle.properties`. Add one pending `## [1.0.0]` section above the historical `0.1.0` entry in `CHANGELOG.md`, recording the new valid-damage-tick behavior and the approved breaking support change. Keep `0.1.0` as release history.
 
-- [ ] **Step 8: Run focused and full tests**
+- [x] **Step 8: Run focused and full tests**
 
 Run:
 
@@ -169,7 +169,7 @@ Run:
 
 Expected: all focused tests and the complete existing suite pass.
 
-- [ ] **Step 9: Review and commit**
+- [x] **Step 9: Review and commit**
 
 Run `git diff --check`, review only the Task 1 diff, scan changed files for credential-like assignments, then commit:
 

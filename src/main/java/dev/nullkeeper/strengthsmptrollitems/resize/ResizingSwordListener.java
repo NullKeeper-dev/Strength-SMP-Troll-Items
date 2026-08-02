@@ -1,5 +1,6 @@
 package dev.nullkeeper.strengthsmptrollitems.resize;
 
+import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
@@ -18,23 +19,25 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 public final class ResizingSwordListener implements Listener {
     private final TrollItemService items;
     private final ScaleService scales;
+    private final DamageTickPolicy damageTicks;
     private final Supplier<PluginConfig> configSource;
 
     public ResizingSwordListener(
             TrollItemService items,
             ScaleService scales,
+            DamageTickPolicy damageTicks,
             Supplier<PluginConfig> configSource) {
         this.items = Objects.requireNonNull(items, "items");
         this.scales = Objects.requireNonNull(scales, "scales");
+        this.damageTicks = Objects.requireNonNull(damageTicks, "damageTicks");
         this.configSource = Objects.requireNonNull(configSource, "configSource");
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
-        if (event.isCancelled()
-                || event.getFinalDamage() <= 0.0
-                || !(event.getDamager() instanceof Player attacker)
+        if (!(event.getDamager() instanceof Player attacker)
                 || !(event.getEntity() instanceof LivingEntity target)
+                || !damageTicks.qualifies(event, target)
                 || !items.isType(
                         attacker.getInventory().getItemInMainHand(),
                         TrollItemType.RESIZING_SWORD)) {

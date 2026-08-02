@@ -2,6 +2,18 @@
 
 All notable changes to Strength SMP Troll Items are documented here.
 
+## [1.0.0]
+
+### Changed
+
+- Troll-item hit effects now activate on valid damage ticks even when armor,
+  enchantments, or Resistance reduce final health damage to zero.
+- Creative, Spectator, explicitly invulnerable, and damage-immunity-window
+  targets do not activate hit effects; cancelled protection-plugin events and
+  zero raw damage remain ignored.
+- Server support is changing from the Bukkit-family matrix to the approved
+  Paper/Purpur-only release matrix.
+
 ## [0.1.0] - 2026-08-01
 
 ### Added

@@ -2,6 +2,7 @@ package dev.nullkeeper.strengthsmptrollitems.resize;
 
 import dev.nullkeeper.strengthsmptrollitems.config.ConfigLoader;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig;
+import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
@@ -9,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -25,6 +27,7 @@ import org.mockbukkit.mockbukkit.plugin.PluginMock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static dev.nullkeeper.strengthsmptrollitems.combat.DamageEventFixtures.zeroFinalDamage;
 
 @SuppressWarnings({"deprecation", "removal"})
 class ResizingSwordListenerTest {
@@ -50,7 +53,7 @@ class ResizingSwordListenerTest {
         items = new TrollItemService(keys);
         scales = new ScaleService(keys, scaleAttribute);
         config = new ConfigLoader().load(defaultYaml());
-        listener = new ResizingSwordListener(items, scales, () -> config);
+        listener = new ResizingSwordListener(items, scales, new DamageTickPolicy(), () -> config);
         attacker.getInventory().setItemInMainHand(items.create(TrollItemType.RESIZING_SWORD, config));
     }
 
@@ -81,11 +84,34 @@ class ResizingSwordListenerTest {
     }
 
     @Test
-    void cancelledOrZeroDamageHitDoesNothing() {
+    void zeroFinalDamageHitStillGrows() {
+        listener.onDamage(zeroFinalDamage(
+                attacker,
+                target,
+                DamageCause.ENTITY_ATTACK));
+
+        assertEquals(1.05, target.getAttribute(scaleAttribute).getBaseValue());
+    }
+
+    @Test
+    void sharedDamageTickRejectionsDoNotGrow() {
         EntityDamageByEntityEvent cancelled = damage(attacker, target, 1.0);
         cancelled.setCancelled(true);
         listener.onDamage(cancelled);
         listener.onDamage(damage(attacker, target, 0.0));
+
+        target.setGameMode(GameMode.CREATIVE);
+        listener.onDamage(damage(attacker, target, 1.0));
+        target.setGameMode(GameMode.SPECTATOR);
+        listener.onDamage(damage(attacker, target, 1.0));
+        target.setGameMode(GameMode.SURVIVAL);
+
+        target.setInvulnerable(true);
+        listener.onDamage(damage(attacker, target, 1.0));
+        target.setInvulnerable(false);
+
+        target.setNoDamageTicks(5);
+        listener.onDamage(damage(attacker, target, 1.0));
 
         assertEquals(1.0, target.getAttribute(scaleAttribute).getBaseValue());
     }
@@ -107,6 +133,7 @@ class ResizingSwordListenerTest {
         ResizingSwordListener unsupportedListener = new ResizingSwordListener(
                 items,
                 new ScaleService(keys, Attribute.FLYING_SPEED),
+                new DamageTickPolicy(),
                 () -> config);
 
         unsupportedListener.onDamage(damage(attacker, cow, 1.0));

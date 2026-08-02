@@ -1,5 +1,6 @@
 package dev.nullkeeper.strengthsmptrollitems.hungry;
 
+import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
@@ -17,23 +18,25 @@ import org.bukkit.inventory.ItemStack;
 public final class HungryBerryListener implements Listener {
     private final TrollItemService items;
     private final EdibleItemService edibles;
+    private final DamageTickPolicy damageTicks;
     private final Supplier<PluginConfig> configSource;
 
     public HungryBerryListener(
             TrollItemService items,
             EdibleItemService edibles,
+            DamageTickPolicy damageTicks,
             Supplier<PluginConfig> configSource) {
         this.items = Objects.requireNonNull(items, "items");
         this.edibles = Objects.requireNonNull(edibles, "edibles");
+        this.damageTicks = Objects.requireNonNull(damageTicks, "damageTicks");
         this.configSource = Objects.requireNonNull(configSource, "configSource");
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
-        if (event.isCancelled()
-                || event.getFinalDamage() <= 0.0
-                || !(event.getDamager() instanceof Player attacker)
+        if (!(event.getDamager() instanceof Player attacker)
                 || !(event.getEntity() instanceof Player target)
+                || !damageTicks.qualifies(event, target)
                 || !items.isType(
                         attacker.getInventory().getItemInMainHand(),
                         TrollItemType.HUNGRY_BERRY)) {

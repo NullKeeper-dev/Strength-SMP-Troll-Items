@@ -3,6 +3,7 @@ package dev.nullkeeper.strengthsmptrollitems.hungry;
 import dev.nullkeeper.strengthsmptrollitems.config.ConfigLoader;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig;
 import dev.nullkeeper.strengthsmptrollitems.config.PluginConfig.EdibleSettings;
+import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
@@ -11,6 +12,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -32,6 +34,7 @@ import org.mockbukkit.mockbukkit.plugin.PluginMock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static dev.nullkeeper.strengthsmptrollitems.combat.DamageEventFixtures.zeroFinalDamage;
 
 @SuppressWarnings({"deprecation", "removal"})
 class HungryBerryListenerTest {
@@ -56,7 +59,11 @@ class HungryBerryListenerTest {
         config = new ConfigLoader().load(defaultYaml());
         settings = new AtomicReference<>(config.edible());
         edibles = new EdibleItemService(items, settings::get);
-        berryListener = new HungryBerryListener(items, edibles, () -> config);
+        berryListener = new HungryBerryListener(
+                items,
+                edibles,
+                new DamageTickPolicy(),
+                () -> config);
         interactionListener = new EdibleInteractionListener(
                 plugin,
                 items,
@@ -96,7 +103,19 @@ class HungryBerryListenerTest {
     }
 
     @Test
-    void cancelledZeroDamageOrNonPlayerTargetsDoNothing() {
+    void zeroFinalDamageHitStillConvertsHeldStack() {
+        target.getInventory().setItemInMainHand(new ItemStack(Material.DIAMOND, 2));
+
+        berryListener.onDamage(zeroFinalDamage(
+                attacker,
+                target,
+                DamageCause.ENTITY_ATTACK));
+
+        assertTrue(items.isEdible(target.getInventory().getItemInMainHand()));
+    }
+
+    @Test
+    void sharedDamageTickRejectionsDoNotConvert() {
         ItemStack held = new ItemStack(Material.DIAMOND, 2);
         target.getInventory().setItemInMainHand(held);
         EntityDamageByEntityEvent cancelled = damage(attacker, target, 1.0);
@@ -104,6 +123,26 @@ class HungryBerryListenerTest {
 
         berryListener.onDamage(cancelled);
         berryListener.onDamage(damage(attacker, target, 0.0));
+
+        target.setGameMode(GameMode.CREATIVE);
+        berryListener.onDamage(damage(attacker, target, 1.0));
+        target.setGameMode(GameMode.SPECTATOR);
+        berryListener.onDamage(damage(attacker, target, 1.0));
+        target.setGameMode(GameMode.SURVIVAL);
+
+        target.setInvulnerable(true);
+        berryListener.onDamage(damage(attacker, target, 1.0));
+        target.setInvulnerable(false);
+
+        target.setNoDamageTicks(5);
+        berryListener.onDamage(damage(attacker, target, 1.0));
+
+        assertFalse(items.isEdible(target.getInventory().getItemInMainHand()));
+    }
+
+    @Test
+    void nonPlayerTargetDoesNotConvertPlayerStack() {
+        target.getInventory().setItemInMainHand(new ItemStack(Material.DIAMOND, 2));
         LivingEntity cow = (LivingEntity) target.getWorld().spawnEntity(
                 target.getLocation(),
                 EntityType.COW);
