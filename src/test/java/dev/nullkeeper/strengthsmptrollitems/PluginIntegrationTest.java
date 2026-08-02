@@ -1,5 +1,6 @@
 package dev.nullkeeper.strengthsmptrollitems;
 
+import dev.nullkeeper.strengthsmptrollitems.update.UpdateNotificationListener;
 import org.bukkit.event.HandlerList;
 import org.bukkit.scheduler.BukkitTask;
 import org.junit.jupiter.api.AfterEach;
@@ -34,7 +35,9 @@ class PluginIntegrationTest {
         assertEquals(0.05, plugin.getConfig().getDouble("resize.step"));
         assertNotNull(plugin.getCommand("trollitems"));
         assertNotNull(plugin.getCommand("trollitems").getExecutor());
-        assertTrue(HandlerList.getRegisteredListeners(plugin).size() >= 8);
+        assertTrue(HandlerList.getRegisteredListeners(plugin).size() >= 9);
+        assertTrue(HandlerList.getRegisteredListeners(plugin).stream()
+                .anyMatch(listener -> listener.getListener() instanceof UpdateNotificationListener));
         assertTrue(server.getScheduler().getPendingTasks().stream()
                 .anyMatch(task -> task.getOwner() == plugin));
 

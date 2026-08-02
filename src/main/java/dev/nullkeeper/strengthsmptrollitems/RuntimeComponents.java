@@ -23,6 +23,11 @@ import dev.nullkeeper.strengthsmptrollitems.ravager.SpookyCrossbowListener;
 import dev.nullkeeper.strengthsmptrollitems.resize.ResizingSwordListener;
 import dev.nullkeeper.strengthsmptrollitems.resize.ScalePersistenceListener;
 import dev.nullkeeper.strengthsmptrollitems.resize.ScaleService;
+import dev.nullkeeper.strengthsmptrollitems.update.ModrinthApiClient;
+import dev.nullkeeper.strengthsmptrollitems.update.UpdateChecker;
+import dev.nullkeeper.strengthsmptrollitems.update.UpdateNotificationListener;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,18 +43,39 @@ import org.bukkit.scheduler.BukkitTask;
 public final class RuntimeComponents implements AutoCloseable {
     private final JavaPlugin plugin;
     private final BukkitTask targetTask;
+    private final BukkitTask updateTask;
+    private final UpdateChecker updateChecker;
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    private RuntimeComponents(JavaPlugin plugin, BukkitTask targetTask) {
+    private RuntimeComponents(
+            JavaPlugin plugin,
+            BukkitTask targetTask,
+            BukkitTask updateTask,
+            UpdateChecker updateChecker) {
         this.plugin = plugin;
         this.targetTask = targetTask;
+        this.updateTask = updateTask;
+        this.updateChecker = updateChecker;
     }
 
     public static RuntimeComponents start(JavaPlugin plugin) {
         Objects.requireNonNull(plugin, "plugin");
         BukkitTask targetTask = null;
+        BukkitTask updateTask = null;
+        UpdateChecker updateChecker = null;
         try {
             ConfigService configs = configs(plugin);
+            String pluginVersion = plugin.getPluginMeta().getVersion();
+            updateChecker = new UpdateChecker(
+                    configs::current,
+                    pluginVersion,
+                    ModrinthApiClient.PROJECT_PAGE,
+                    new ModrinthApiClient(
+                            HttpClient.newBuilder()
+                                    .connectTimeout(Duration.ofSeconds(5))
+                                    .build(),
+                            pluginVersion),
+                    plugin.getLogger());
             PersistentKeys keys = new PersistentKeys(plugin);
             TrollItemService items = new TrollItemService(keys);
             PrivateRavagerRegistry registry = new PrivateRavagerRegistry();
@@ -63,7 +89,7 @@ public final class RuntimeComponents implements AutoCloseable {
                     metadata,
                     policy);
 
-            registerCommand(plugin, configs, items);
+            registerCommand(plugin, configs, items, updateChecker);
             RavagerTargetController controller = registerListeners(
                     plugin,
                     configs,
@@ -72,15 +98,19 @@ public final class RuntimeComponents implements AutoCloseable {
                     registry,
                     metadata,
                     policy,
-                    visibility);
+                    visibility,
+                    updateChecker);
             targetTask = plugin.getServer().getScheduler().runTaskTimer(
                     plugin,
                     new DynamicTargetTask(plugin, configs, controller),
                     1L,
                     1L);
-            return new RuntimeComponents(plugin, targetTask);
+            updateTask = plugin.getServer().getScheduler().runTask(
+                    plugin,
+                    new UpdateCheckTask(plugin, updateChecker));
+            return new RuntimeComponents(plugin, targetTask, updateTask, updateChecker);
         } catch (RuntimeException exception) {
-            cleanupFailedStart(plugin, targetTask);
+            cleanupFailedStart(plugin, targetTask, updateTask, updateChecker);
             throw exception;
         }
     }
@@ -96,11 +126,13 @@ public final class RuntimeComponents implements AutoCloseable {
     private static void registerCommand(
             JavaPlugin plugin,
             ConfigService configs,
-            TrollItemService items) {
+            TrollItemService items,
+            UpdateChecker updateChecker) {
         TrollItemsCommand handler = new TrollItemsCommand(
                 configs,
                 new GiveItemService(items),
-                plugin.getLogger());
+                plugin.getLogger(),
+                updateChecker::refresh);
         PluginCommand command = Objects.requireNonNull(
                 plugin.getCommand("trollitems"),
                 "plugin.yml is missing the trollitems command");
@@ -116,7 +148,8 @@ public final class RuntimeComponents implements AutoCloseable {
             PrivateRavagerRegistry registry,
             RavagerMetadataStore metadata,
             RavagerAccessPolicy policy,
-            RavagerVisibilityService visibility) {
+            RavagerVisibilityService visibility,
+            UpdateChecker updateChecker) {
         ScaleService scales = new ScaleService(
                 keys,
                 warning -> plugin.getLogger().warning(warning));
@@ -149,7 +182,8 @@ public final class RuntimeComponents implements AutoCloseable {
                         damageTicks,
                         configs::current),
                 new RavagerProtectionListener(metadata, policy),
-                lifecycle);
+                lifecycle,
+                new UpdateNotificationListener(configs::current, updateChecker::availableUpdate));
         PluginManager manager = plugin.getServer().getPluginManager();
         listeners.forEach(listener -> manager.registerEvents(listener, plugin));
         scalePersistence.scanLoadedWorlds();
@@ -159,9 +193,17 @@ public final class RuntimeComponents implements AutoCloseable {
 
     private static void cleanupFailedStart(
             JavaPlugin plugin,
-            BukkitTask targetTask) {
+            BukkitTask targetTask,
+            BukkitTask updateTask,
+            UpdateChecker updateChecker) {
         if (targetTask != null) {
             targetTask.cancel();
+        }
+        if (updateTask != null) {
+            updateTask.cancel();
+        }
+        if (updateChecker != null) {
+            updateChecker.close();
         }
         HandlerList.unregisterAll(plugin);
         plugin.getServer().getScheduler().cancelTasks(plugin);
@@ -173,8 +215,29 @@ public final class RuntimeComponents implements AutoCloseable {
             return;
         }
         targetTask.cancel();
+        updateTask.cancel();
+        updateChecker.close();
         HandlerList.unregisterAll(plugin);
         plugin.getServer().getScheduler().cancelTasks(plugin);
+    }
+
+    private static final class UpdateCheckTask implements Runnable {
+        private final JavaPlugin plugin;
+        private final UpdateChecker checker;
+
+        private UpdateCheckTask(JavaPlugin plugin, UpdateChecker checker) {
+            this.plugin = plugin;
+            this.checker = checker;
+        }
+
+        @Override
+        public void run() {
+            try {
+                checker.refresh();
+            } catch (RuntimeException exception) {
+                plugin.getLogger().log(Level.SEVERE, "Modrinth update check failed", exception);
+            }
+        }
     }
 
     private static final class DynamicTargetTask implements Runnable {

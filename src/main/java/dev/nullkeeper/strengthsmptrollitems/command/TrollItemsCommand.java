@@ -29,11 +29,19 @@ public final class TrollItemsCommand implements CommandExecutor, TabCompleter {
     private final ConfigService configs;
     private final GiveItemService giver;
     private final Logger logger;
+    private final Runnable successfulReloadHook;
 
-    public TrollItemsCommand(ConfigService configs, GiveItemService giver, Logger logger) {
+    public TrollItemsCommand(
+            ConfigService configs,
+            GiveItemService giver,
+            Logger logger,
+            Runnable successfulReloadHook) {
         this.configs = Objects.requireNonNull(configs, "configs");
         this.giver = Objects.requireNonNull(giver, "giver");
         this.logger = Objects.requireNonNull(logger, "logger");
+        this.successfulReloadHook = Objects.requireNonNull(
+                successfulReloadHook,
+                "successfulReloadHook");
     }
 
     @Override
@@ -131,6 +139,7 @@ public final class TrollItemsCommand implements CommandExecutor, TabCompleter {
         }
         ReloadResult result = configs.reloadFromDisk();
         if (result.successful()) {
+            successfulReloadHook.run();
             send(sender, configs.current().messages().reloadSuccess());
         } else {
             logger.warning("Configuration reload rejected: " + result.message());

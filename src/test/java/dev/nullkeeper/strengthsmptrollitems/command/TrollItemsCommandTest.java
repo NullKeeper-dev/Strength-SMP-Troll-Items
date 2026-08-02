@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -53,7 +54,8 @@ class TrollItemsCommandTest {
         executor = new TrollItemsCommand(
                 configs,
                 new GiveItemService(items),
-                plugin.getLogger());
+                plugin.getLogger(),
+                () -> {});
         command = new Command("trollitems") {
             @Override
             public boolean execute(CommandSender commandSender, String label, String[] args) {
@@ -147,13 +149,40 @@ class TrollItemsCommandTest {
         AtomicReference<YamlConfiguration> disk = new AtomicReference<>(defaultYaml());
         disk.get().set("resize.step", 0.1);
         configs = new ConfigService(new ConfigLoader(), defaultYaml(), disk::get);
-        executor = new TrollItemsCommand(configs, new GiveItemService(items), plugin.getLogger());
+        AtomicInteger reloadHooks = new AtomicInteger();
+        executor = new TrollItemsCommand(
+                configs,
+                new GiveItemService(items),
+                plugin.getLogger(),
+                reloadHooks::incrementAndGet);
 
         execute(sender, "reload");
 
         assertEquals(0.1, configs.current().resize().step());
+        assertEquals(1, reloadHooks.get());
         assertEquals(
                 ChatColor.GREEN + "Strength SMP Troll Items configuration reloaded.",
+                sender.nextMessage());
+    }
+
+    @Test
+    void rejectedReloadDoesNotRunSuccessHook() {
+        sender.addAttachment(plugin, "trollitems.reload", true);
+        YamlConfiguration invalid = defaultYaml();
+        invalid.set("resize.step", -0.1);
+        configs = new ConfigService(new ConfigLoader(), defaultYaml(), () -> invalid);
+        AtomicInteger reloadHooks = new AtomicInteger();
+        executor = new TrollItemsCommand(
+                configs,
+                new GiveItemService(items),
+                plugin.getLogger(),
+                reloadHooks::incrementAndGet);
+
+        execute(sender, "reload");
+
+        assertEquals(0, reloadHooks.get());
+        assertEquals(
+                ChatColor.RED + "Reload failed; the previous configuration is still active. Check the console.",
                 sender.nextMessage());
     }
 
