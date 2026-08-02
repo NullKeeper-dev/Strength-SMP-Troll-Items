@@ -74,7 +74,15 @@ Install JDK 25, then run:
 .\gradlew.bat clean build
 ```
 
-The binary-compatible common jar is written to `build/libs/strength-smp-troll-items-<version>.jar`. To repeat the source compatibility compile against the 26.2 Spigot API in PowerShell, run `.\gradlew.bat clean compileJava "-PbukkitApiVersion=26.2-R0.1-SNAPSHOT"`. The build produces no sources jar.
+The build writes five jars to `build/libs/`:
+
+- `strength-smp-troll-items-<version>-paper-26.1.1.jar`
+- `strength-smp-troll-items-<version>-paper-26.1.2.jar`
+- `strength-smp-troll-items-<version>-paper-26.2.jar`
+- `strength-smp-troll-items-<version>-purpur-26.1.2.jar`
+- `strength-smp-troll-items-<version>-purpur-26.2.jar`
+
+No universal or sources jar is produced.
 
 </details>
 

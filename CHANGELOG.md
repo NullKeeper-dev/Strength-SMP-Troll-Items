@@ -13,6 +13,8 @@ All notable changes to Strength SMP Troll Items are documented here.
   zero raw damage remain ignored.
 - Server support is changing from the Bukkit-family matrix to the approved
   Paper/Purpur-only release matrix.
+- Builds now produce five exact-target jars: Paper 26.1.1, Paper 26.1.2,
+  Paper 26.2, Purpur 26.1.2, and Purpur 26.2; no universal jar is produced.
 - ProtocolLib is no longer required; private Ravagers use native Paper entity
   visibility and remain visually hidden from non-participants.
 - Private Ravager sounds may still be heard by nearby non-participants because

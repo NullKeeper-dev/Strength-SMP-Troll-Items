@@ -329,13 +329,13 @@ git commit -m "Replace ProtocolLib with native Paper visibility"
 - Produces matching `jar...` tasks plus `verifyDistributables`.
 - Produces exactly the five archive classifiers `paper-26.1.1`, `paper-26.1.2`, `paper-26.2`, `purpur-26.1.2`, and `purpur-26.2`.
 
-- [ ] **Step 1: Prove the current build does not meet the matrix**
+- [x] **Step 1: Prove the current build does not meet the matrix**
 
 Run: `.\gradlew.bat clean assemble`
 
 Expected: only the old universal `strength-smp-troll-items-1.0.0.jar` exists; the five required labelled jars are absent.
 
-- [ ] **Step 2: Make the descriptor API version target-expandable**
+- [x] **Step 2: Make the descriptor API version target-expandable**
 
 Change the descriptor to:
 
@@ -345,7 +345,7 @@ api-version: '${apiVersion}'
 
 Keep ordinary `processResources` expanding `apiVersion` to `26.1` so MockBukkit descriptor tests remain deterministic. Keep the descriptor test expecting `26.1` and an empty dependency list.
 
-- [ ] **Step 3: Define the pinned target model**
+- [x] **Step 3: Define the pinned target model**
 
 Add this model near the top of `build.gradle.kts`:
 
@@ -367,7 +367,7 @@ val serverTargets = listOf(
 
 Add `maven("https://repo.purpurmc.org/snapshots")` beside the Paper repository.
 
-- [ ] **Step 4: Register isolated compile, resource, and jar tasks**
+- [x] **Step 4: Register isolated compile, resource, and jar tasks**
 
 For each target, create a resolvable API configuration containing only its coordinate. Register a `JavaCompile` with the main Java source and that target classpath, a `ProcessResources` expanding `version` and target `apiVersion`, and a `Jar` with the target classifier. Use Java release 25 for every compiler.
 
@@ -447,7 +447,7 @@ tasks.register("verifyDistributables") {
 }
 ```
 
-- [ ] **Step 5: Compile and inspect all targets**
+- [x] **Step 5: Compile and inspect all targets**
 
 Run:
 
@@ -468,11 +468,11 @@ strength-smp-troll-items-1.0.0-purpur-26.2.jar
 
 For each jar, run `jar tf` and confirm `plugin.yml`, `config.yml`, and production classes exist while ProtocolLib and test classes do not. Extract `plugin.yml` into an ignored temporary directory under `run/jar-inspection/` and confirm 26.1-family jars declare `26.1`, 26.2 jars declare `26.2`, and all declare version `1.0.0` with no `depend` key.
 
-- [ ] **Step 6: Update build documentation and changelog**
+- [x] **Step 6: Update build documentation and changelog**
 
 Update README build instructions to say `.\gradlew.bat clean build`, list all five filenames, and state that no universal jar is produced. Add the five-jar matrix to the pending changelog entry.
 
-- [ ] **Step 7: Review and commit**
+- [x] **Step 7: Review and commit**
 
 Run `git diff --check`, review the generated archive list, scan modified files for credentials, and commit:
 

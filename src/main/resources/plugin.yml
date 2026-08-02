@@ -1,7 +1,7 @@
 name: StrengthSmpTrollItems
 version: '${version}'
 main: dev.nullkeeper.strengthsmptrollitems.StrengthSmpTrollItemsPlugin
-api-version: '26.1'
+api-version: '${apiVersion}'
 description: Three configurable troll items inspired by Strength SMP VS Admin Items.
 author: NullKeeper-dev
 website: https://modrinth.com/project/strength-smp-troll-items
