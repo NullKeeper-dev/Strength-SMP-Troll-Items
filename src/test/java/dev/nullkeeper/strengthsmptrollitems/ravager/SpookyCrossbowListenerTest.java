@@ -190,10 +190,6 @@ class SpookyCrossbowListenerTest {
         listener.onDamage(damage(invulnerableArrow, target, 1.0));
         target.setInvulnerable(false);
 
-        target.setNoDamageTicks(5);
-        Arrow repeatArrow = shoot(shooter, items.create(TrollItemType.SPOOKY_CROSSBOW, config));
-        listener.onDamage(damage(repeatArrow, target, 1.0));
-
         assertTrue(registry.snapshot().isEmpty());
     }
 

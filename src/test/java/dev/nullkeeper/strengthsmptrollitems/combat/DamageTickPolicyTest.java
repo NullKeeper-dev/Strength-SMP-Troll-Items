@@ -90,10 +90,10 @@ class DamageTickPolicyTest {
     }
 
     @Test
-    void immunityWindowRepeatDoesNotQualify() {
+    void positiveDamageEventQualifiesWhileNoDamageTicksIsPositive() {
         target.setNoDamageTicks(5);
 
-        assertFalse(policy.qualifies(damage(target, 1.0), target));
+        assertTrue(policy.qualifies(damage(target, 1.0), target));
     }
 
     private EntityDamageByEntityEvent damage(LivingEntity victim, double amount) {

@@ -12,8 +12,7 @@ public final class DamageTickPolicy {
         Objects.requireNonNull(target, "target");
         if (event.isCancelled()
                 || event.getDamage() <= 0.0
-                || target.isInvulnerable()
-                || target.getNoDamageTicks() > 0) {
+                || target.isInvulnerable()) {
             return false;
         }
         if (target instanceof Player player) {

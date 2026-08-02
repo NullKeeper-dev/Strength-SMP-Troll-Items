@@ -94,6 +94,15 @@ class ResizingSwordListenerTest {
     }
 
     @Test
+    void positiveDamageEventDuringNoDamageTicksStillGrows() {
+        target.setNoDamageTicks(5);
+
+        listener.onDamage(damage(attacker, target, 1.0));
+
+        assertEquals(1.05, target.getAttribute(scaleAttribute).getBaseValue());
+    }
+
+    @Test
     void sharedDamageTickRejectionsDoNotGrow() {
         EntityDamageByEntityEvent cancelled = damage(attacker, target, 1.0);
         cancelled.setCancelled(true);
@@ -109,9 +118,6 @@ class ResizingSwordListenerTest {
         target.setInvulnerable(true);
         listener.onDamage(damage(attacker, target, 1.0));
         target.setInvulnerable(false);
-
-        target.setNoDamageTicks(5);
-        listener.onDamage(damage(attacker, target, 1.0));
 
         assertEquals(1.0, target.getAttribute(scaleAttribute).getBaseValue());
     }

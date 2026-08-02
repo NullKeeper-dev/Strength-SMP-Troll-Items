@@ -132,9 +132,6 @@ class HungryBerryListenerTest {
         berryListener.onDamage(damage(attacker, target, 1.0));
         target.setInvulnerable(false);
 
-        target.setNoDamageTicks(5);
-        berryListener.onDamage(damage(attacker, target, 1.0));
-
         assertFalse(items.isEdible(target.getInventory().getItemInMainHand()));
     }
 
