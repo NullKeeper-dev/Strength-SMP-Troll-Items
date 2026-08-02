@@ -3,6 +3,7 @@ AGENTS.md
 build/
 run/
 out/
+docs/
 
 .idea/
 .fleet/
