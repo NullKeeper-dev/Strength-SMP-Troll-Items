@@ -22,15 +22,17 @@ single Paper-compatible jar for Paper and Purpur.
 - Project page: [Modrinth — Strength SMP Troll
   Items](https://modrinth.com/project/strength-smp-troll-items).
 - License: GPL-3.0-only.
-- Minecraft: 26.1, 26.1.1, 26.1.2, and 26.2.
-- Servers: Paper and Purpur only.
+- Supported targets: Paper 26.1.1, Paper 26.1.2, Paper 26.2, Purpur 26.1.2,
+  and Purpur 26.2.
+- Unavailable targets: Paper 26.1, Purpur 26.1, and Purpur 26.1.1 have no
+  official server distributions and are therefore not build or test targets.
 - Java: 25.
 - Build system: Gradle Wrapper.
 - Required runtime dependencies: none.
 - Plugin descriptor: `plugin.yml`, with its version expanded from the Gradle
   project version during resource processing.
-- Distribution: one common jar for every supported version after compile and
-  live-server verification confirms binary compatibility.
+- Distribution: five separately compiled jars, each labelled with its platform
+  and exact Minecraft version. No universal jar is produced.
 
 The implementation compiles against the Paper API and may use stable Paper
 APIs. Purpur is supported as a Paper-compatible server. Direct Spigot API
@@ -321,9 +323,9 @@ because MockBukkit cannot faithfully simulate them.
 
 ### Manual verification matrix
 
-Run the same final jar on Paper and Purpur for Minecraft 26.1, 26.1.1, 26.1.2,
-and 26.2. Every version/platform combination receives a compatibility smoke
-test; at least one Paper and one Purpur server receive the full feature suite.
+Run the matching final jar on Paper 26.1.1, Paper 26.1.2, Paper 26.2, Purpur
+26.1.2, and Purpur 26.2. Every target receives a compatibility smoke test; at
+least one Paper and one Purpur server receive the full feature suite.
 
 Use three players to verify:
 
@@ -354,8 +356,6 @@ The README follows the repository's required format and includes:
 - Clear inspiration credit linking the original video and LeekLeekMC channel.
 
 The release maintains one matching pending changelog section, compiles every
-necessary compatibility target, and produces one normal distributable jar
-without a source jar. Removing previously documented Spigot and CraftBukkit
-support is a breaking change and therefore requires the repository's mandated
-MAJOR-version confirmation before the implementation changes the project
-version.
+supported target, and produces exactly five normal distributable jars without
+source jars. Removing previously documented Spigot and CraftBukkit support is a
+breaking change; the approved release version is `1.0.0`.
