@@ -5,8 +5,6 @@ import org.gradle.api.attributes.Usage
 import org.gradle.api.attributes.java.TargetJvmEnvironment
 import org.gradle.api.attributes.java.TargetJvmVersion
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.jvm.tasks.Jar
-import org.gradle.language.jvm.tasks.ProcessResources
 
 plugins {
     java
@@ -14,7 +12,6 @@ plugins {
 
 data class ServerTarget(
     val id: String,
-    val apiVersion: String,
     val coordinate: String,
 )
 
@@ -23,11 +20,11 @@ version = providers.gradleProperty("version").get()
 val releaseVersion = project.version.toString()
 
 val serverTargets = listOf(
-    ServerTarget("paper-26.1.1", "26.1", "io.papermc.paper:paper-api:26.1.1.build.29-alpha"),
-    ServerTarget("paper-26.1.2", "26.1", "io.papermc.paper:paper-api:26.1.2.build.74-stable"),
-    ServerTarget("paper-26.2", "26.2", "io.papermc.paper:paper-api:26.2.build.87-stable"),
-    ServerTarget("purpur-26.1.2", "26.1", "org.purpurmc.purpur:purpur-api:26.1.2.build.2592-stable"),
-    ServerTarget("purpur-26.2", "26.2", "org.purpurmc.purpur:purpur-api:26.2.build.2618-stable"),
+    ServerTarget("paper-26.1.1", "io.papermc.paper:paper-api:26.1.1.build.29-alpha"),
+    ServerTarget("paper-26.1.2", "io.papermc.paper:paper-api:26.1.2.build.74-stable"),
+    ServerTarget("paper-26.2", "io.papermc.paper:paper-api:26.2.build.87-stable"),
+    ServerTarget("purpur-26.1.2", "org.purpurmc.purpur:purpur-api:26.1.2.build.2592-stable"),
+    ServerTarget("purpur-26.2", "org.purpurmc.purpur:purpur-api:26.2.build.2618-stable"),
 )
 
 repositories {
@@ -69,7 +66,7 @@ tasks.test {
 }
 
 tasks.jar {
-    enabled = false
+    enabled = true
     archiveBaseName.set("strength-smp-troll-items")
     manifest {
         attributes(
@@ -79,7 +76,7 @@ tasks.jar {
     }
 }
 
-val targetJarTasks = serverTargets.map { target ->
+val compatibilityCompileTasks = serverTargets.map { target ->
     val suffix = target.id.split('-', '.').joinToString("") { segment ->
         segment.replaceFirstChar { character -> character.uppercase() }
     }
@@ -112,7 +109,7 @@ val targetJarTasks = serverTargets.map { target ->
     }
     dependencies.add(api.name, target.coordinate)
 
-    val compile = tasks.register<JavaCompile>("compile${suffix}Java") {
+    tasks.register<JavaCompile>("compile${suffix}Java") {
         source(sourceSets.main.get().java)
         classpath = api
         destinationDirectory.set(layout.buildDirectory.dir("classes/targets/${target.id}"))
@@ -122,43 +119,16 @@ val targetJarTasks = serverTargets.map { target ->
         options.encoding = "UTF-8"
         options.release.set(25)
     }
-    val resources = tasks.register<ProcessResources>("process${suffix}Resources") {
-        from(sourceSets.main.get().resources)
-        destinationDir = layout.buildDirectory.dir("resources/targets/${target.id}").get().asFile
-        inputs.property("version", releaseVersion)
-        inputs.property("apiVersion", target.apiVersion)
-        filesMatching("plugin.yml") {
-            expand(
-                "version" to releaseVersion,
-                "apiVersion" to target.apiVersion,
-            )
-        }
-    }
-    tasks.register<Jar>("jar${suffix}") {
-        dependsOn(compile, resources)
-        archiveBaseName.set("strength-smp-troll-items")
-        archiveClassifier.set(target.id)
-        from(compile.flatMap { it.destinationDirectory })
-        from(resources)
-        manifest {
-            attributes(
-                "Implementation-Title" to project.name,
-                "Implementation-Version" to project.version,
-            )
-        }
-    }
 }
 
-tasks.assemble {
-    dependsOn(targetJarTasks)
+tasks.check {
+    dependsOn(compatibilityCompileTasks)
 }
 
-val expectedDistributables = serverTargets
-    .map { target -> "strength-smp-troll-items-$releaseVersion-${target.id}.jar" }
-    .toSet()
+val expectedDistributables = setOf("strength-smp-troll-items-$releaseVersion.jar")
 
 tasks.register("verifyDistributables") {
-    dependsOn(targetJarTasks)
+    dependsOn(tasks.jar, compatibilityCompileTasks)
     doLast {
         val actual = layout.buildDirectory.dir("libs").get().asFile
             .listFiles { file -> file.extension == "jar" }
