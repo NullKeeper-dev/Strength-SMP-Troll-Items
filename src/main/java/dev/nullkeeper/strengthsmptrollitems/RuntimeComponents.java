@@ -139,11 +139,7 @@ public final class RuntimeComponents implements AutoCloseable {
                 new ResizingSwordListener(items, scales, damageTicks, configs::current),
                 scalePersistence,
                 new HungryBerryListener(items, edibles, damageTicks, configs::current),
-                new EdibleInteractionListener(
-                        plugin,
-                        items,
-                        edibles,
-                        () -> configs.current().edible()),
+                new EdibleInteractionListener(items, edibles),
                 new SpookyCrossbowListener(
                         items,
                         new ProjectileHitTracker(

@@ -7,6 +7,7 @@ import dev.nullkeeper.strengthsmptrollitems.combat.DamageTickPolicy;
 import dev.nullkeeper.strengthsmptrollitems.items.PersistentKeys;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemService;
 import dev.nullkeeper.strengthsmptrollitems.items.TrollItemType;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +18,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -64,11 +66,7 @@ class HungryBerryListenerTest {
                 edibles,
                 new DamageTickPolicy(),
                 () -> config);
-        interactionListener = new EdibleInteractionListener(
-                plugin,
-                items,
-                edibles,
-                settings::get);
+        interactionListener = new EdibleInteractionListener(items, edibles);
         attacker.getInventory().setItemInMainHand(items.create(TrollItemType.HUNGRY_BERRY, config));
     }
 
@@ -152,7 +150,7 @@ class HungryBerryListenerTest {
     }
 
     @Test
-    void convertedItemStillConsumesAfterTransferToOffhand() {
+    void convertedOffhandRightClickRoutesToNativeUseWithoutManualConsumption() {
         target.getInventory().setItemInMainHand(new ItemStack(Material.SHIELD, 2));
         berryListener.onDamage(damage(attacker, target, 1.0));
         ItemStack converted = target.getInventory().getItemInMainHand();
@@ -162,25 +160,53 @@ class HungryBerryListenerTest {
 
         interactionListener.onInteract(event);
 
-        assertTrue(event.isCancelled());
-        assertEquals(1, target.getInventory().getItemInOffHand().getAmount());
+        assertEquals(Event.Result.DENY, event.useInteractedBlock());
+        assertEquals(Event.Result.ALLOW, event.useItemInHand());
+        assertEquals(2, target.getInventory().getItemInOffHand().getAmount());
         assertTrue(items.isEdible(target.getInventory().getItemInOffHand()));
     }
 
     @Test
-    void pairedHandEventsConsumeOnlyOneItemPerServerTick() {
-        target.getInventory().setItemInMainHand(edibles.convert(new ItemStack(Material.STONE)));
-        target.getInventory().setItemInOffHand(edibles.convert(new ItemStack(Material.SHIELD, 2)));
+    void rightClickUpgradesLegacyMarkedStackInActiveHand() {
+        ItemStack legacy = items.markEdible(new ItemStack(Material.SHIELD, 2));
+        target.getInventory().setItemInOffHand(legacy);
+        PlayerInteractEvent event = interact(target, EquipmentSlot.OFF_HAND, Action.RIGHT_CLICK_AIR);
 
-        interactionListener.onInteract(interact(target, EquipmentSlot.HAND, Action.RIGHT_CLICK_AIR));
-        interactionListener.onInteract(interact(target, EquipmentSlot.OFF_HAND, Action.RIGHT_CLICK_AIR));
+        interactionListener.onInteract(event);
 
-        assertTrue(target.getInventory().getItemInMainHand().getType().isAir());
-        assertEquals(2, target.getInventory().getItemInOffHand().getAmount());
+        ItemStack prepared = target.getInventory().getItemInOffHand();
+        assertTrue(items.isEdible(prepared));
+        assertEquals(2, prepared.getAmount());
+        assertEquals(Event.Result.ALLOW, event.useItemInHand());
+    }
 
-        server.getScheduler().performTicks(1);
-        interactionListener.onInteract(interact(target, EquipmentSlot.OFF_HAND, Action.RIGHT_CLICK_AIR));
-        assertEquals(1, target.getInventory().getItemInOffHand().getAmount());
+    @Test
+    void cancelledRightClickDoesNotUpgradeOrOverrideProtection() {
+        ItemStack legacy = items.markEdible(new ItemStack(Material.STONE, 2));
+        target.getInventory().setItemInMainHand(legacy);
+        PlayerInteractEvent event = interact(target, EquipmentSlot.HAND, Action.RIGHT_CLICK_AIR);
+        event.setCancelled(true);
+
+        interactionListener.onInteract(event);
+
+        assertTrue(event.isCancelled());
+        assertEquals(Event.Result.DENY, event.useItemInHand());
+        assertFalse(target.getInventory().getItemInMainHand()
+                .hasData(DataComponentTypes.CONSUMABLE));
+    }
+
+    @Test
+    void unmarkedRightClickRemainsUntouched() {
+        target.getInventory().setItemInMainHand(new ItemStack(Material.STONE, 2));
+        PlayerInteractEvent event = interact(target, EquipmentSlot.HAND, Action.RIGHT_CLICK_AIR);
+        Event.Result blockUseBefore = event.useInteractedBlock();
+        Event.Result itemUseBefore = event.useItemInHand();
+
+        interactionListener.onInteract(event);
+
+        assertEquals(blockUseBefore, event.useInteractedBlock());
+        assertEquals(itemUseBefore, event.useItemInHand());
+        assertEquals(2, target.getInventory().getItemInMainHand().getAmount());
     }
 
     @Test
@@ -188,20 +214,6 @@ class HungryBerryListenerTest {
         target.getInventory().setItemInMainHand(edibles.convert(new ItemStack(Material.STONE, 2)));
 
         interactionListener.onInteract(interact(target, EquipmentSlot.HAND, Action.LEFT_CLICK_AIR));
-
-        assertEquals(2, target.getInventory().getItemInMainHand().getAmount());
-    }
-
-    @Test
-    void delayedRepeatedClicksQueueOnlyOneConsumption() {
-        settings.set(new EdibleSettings(0, 0.0f, 2));
-        target.getInventory().setItemInMainHand(edibles.convert(new ItemStack(Material.STONE, 3)));
-
-        interactionListener.onInteract(interact(target, EquipmentSlot.HAND, Action.RIGHT_CLICK_AIR));
-        interactionListener.onInteract(interact(target, EquipmentSlot.HAND, Action.RIGHT_CLICK_AIR));
-        assertEquals(3, target.getInventory().getItemInMainHand().getAmount());
-
-        server.getScheduler().performTicks(2);
 
         assertEquals(2, target.getInventory().getItemInMainHand().getAmount());
     }
