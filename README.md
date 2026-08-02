@@ -72,17 +72,24 @@ universal jar has no runtime dependencies.
 | --- | --- | --- |
 | `/trollitems give ...` | `trollitems.give` | Operators |
 | `/trollitems reload` | `trollitems.reload` | Operators |
+| Update notices on join | `trollitems.update-notify` | Operators |
 
 Key balance settings are `resize.step`, `ravagers.per-hit`,
 `ravagers.speed-level`, `ravagers.spawn-radius`,
 `ravagers.retarget-interval-ticks`, `edible.nutrition`,
-`edible.saturation`, and `edible.consume-delay-ticks`. Item names, lore, and
-player-facing messages are configurable too.
+`edible.saturation`, `edible.consume-delay-ticks`, and
+`update-checker.enabled`. Item names, lore, and player-facing messages are
+configurable too.
 
-Troll effects activate on a valid damage tick even when armor, enchantments,
-or Resistance reduce final health damage to zero. Cancelled events, zero raw
-damage, Creative or Spectator targets, invulnerable targets, and repeat swings
-during the damage-immunity window do not activate them.
+Every uncancelled positive raw damage event activates the applicable troll
+effect, even when armor, enchantments, or Resistance reduce final health damage
+to zero. Cancelled events, zero raw damage, Creative or Spectator targets, and
+explicitly invulnerable targets do not activate them.
+
+The plugin checks its Modrinth page asynchronously after startup. When a newer
+semantic version exists, players with `trollitems.update-notify` see one alert
+per server restart after joining. Set `update-checker.enabled: false` to disable
+the request and alerts.
 
 > **Tip:** Ravagers remain until killed. Every eligible tagged-projectile hit
 > adds five more by default, so repeated use can create a large permanent mob
@@ -121,8 +128,9 @@ world behavior need three real clients. Fully test Paper 26.1.1 and Purpur
 1. Confirm only shooter and target render each Ravager; outsiders cannot collide, attack, or interact; sound leakage is acceptable.
 2. Confirm five more Ravagers per eligible hit, restart persistence, normal world behavior, target-only player damage, and permanent removal when killed.
 3. Confirm sword and berry activate against armored, Resistance-protected Survival players even when final damage is zero.
-4. Confirm Creative, Spectator, invulnerable, protection-cancelled, zero-raw-damage, and immunity-window hits do not activate.
+4. Confirm every uncancelled positive raw damage event activates once, while Creative, Spectator, invulnerable, protection-cancelled, and zero-raw-damage hits do not activate.
 5. Confirm scale persistence and complete-stack edible conversion; hold right-click for six ticks to eat exactly one at full hunger, and confirm early release consumes nothing and usable items do not perform their original action.
+6. Publish a newer semantic version on Modrinth, join twice as an operator, and confirm only one two-line update alert appears until the server restarts.
 
 ---
 

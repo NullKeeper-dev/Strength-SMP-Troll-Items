@@ -2,10 +2,16 @@
 
 All notable changes to Strength SMP Troll Items are documented here.
 
-## [2.0.0]
+## [2.1.0]
 
 ### Changed
 
+- Valid positive damage events are no longer discarded solely because the
+  target's `noDamageTicks` value is positive, making Resizing Sword activation
+  consistent with Paper's registered damage ticks.
+- An asynchronous Modrinth update checker now alerts permitted administrators
+  once per server restart and can be disabled with
+  `update-checker.enabled: false`.
 - Hungry Berry conversions now use Minecraft's native food and consumable
   components with a six-tick eating time by default.
 - Players must keep holding right-click; releasing early or changing the active
