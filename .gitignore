@@ -16,3 +16,4 @@ out/
 .env.*
 local.properties
 *.log
+/docs/superpowers/*
