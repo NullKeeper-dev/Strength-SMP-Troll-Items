@@ -106,7 +106,7 @@ Install JDK 25, then run:
 ```
 
 The build writes one universal jar to
-`build/libs/strength-smp-troll-items-2.0.0.jar`. The same build compiles the
+`build/libs/strength-smp-troll-items-<version>.jar`. The same build compiles the
 source against all five supported APIs as compatibility checks. No sources jar
 is produced.
 
