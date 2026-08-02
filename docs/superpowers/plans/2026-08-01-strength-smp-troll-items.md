@@ -248,17 +248,17 @@ git commit -m "Add troll item commands and identity"
 - Produces: `ScaleMath.change(double current, double step, boolean shrink, double minimum, double maximum)`.
 - Produces: `ScaleService.apply(LivingEntity, boolean, double)` returning `ScaleResult(boolean applied, double value)` and `ScaleService.restore(LivingEntity)`.
 
-- [ ] **Step 1: Write failing pure scale tests**
+- [x] **Step 1: Write failing pure scale tests**
 
 Assert `1.0 -> 1.05`, `1.0 -> 0.95` while sneaking, custom step use, exact minimum/maximum clamping, finite-value validation, and stable decimal formatting without unnecessary trailing zeroes.
 
-- [ ] **Step 2: Run scale tests and confirm red**
+- [x] **Step 2: Run scale tests and confirm red**
 
 Run: `./gradlew test --tests "*.ScaleMathTest"`
 
 Expected: compilation fails because `ScaleMath` does not exist.
 
-- [ ] **Step 3: Implement scale calculation and PDC service**
+- [x] **Step 3: Implement scale calculation and PDC service**
 
 Read `Attribute.SCALE`, calculate through `ScaleMath`, set the base value, and store the result as a PDC `DOUBLE`. Return an unsupported result when the attribute is absent. Reapply stored player values on join and one tick after respawn; scan living entities during chunk load.
 
@@ -269,11 +269,11 @@ attribute.setBaseValue(changed);
 entity.getPersistentDataContainer().set(keys.scale(), PersistentDataType.DOUBLE, changed);
 ```
 
-- [ ] **Step 4: Write failing listener tests**
+- [x] **Step 4: Write failing listener tests**
 
 Use MockBukkit entities to prove main-hand marked sword gating, all-living-entity support, normal grow, sneaking shrink, cancelled/no-final-damage no-op, unsupported-target messaging, and configured yellow attacker output.
 
-- [ ] **Step 5: Implement the event listeners**
+- [x] **Step 5: Implement the event listeners**
 
 Register at `EventPriority.MONITOR` with `ignoreCancelled = true`. Apply only to direct player melee damage with positive final damage. Never catch and swallow an exception; log target type and attacker UUID when recovery is possible.
 
@@ -287,7 +287,7 @@ if (!(event.getDamager() instanceof Player attacker)
 scaleService.apply(target, attacker.isSneaking(), configs.current().resize().step());
 ```
 
-- [ ] **Step 6: Run tests and commit**
+- [x] **Step 6: Run tests and commit**
 
 Run: `./gradlew test --tests "*.Scale*" --tests "*.ResizingSwordListenerTest"`
 
