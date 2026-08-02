@@ -52,9 +52,9 @@ compatible.
 Configuration reloads affect future eating attempts. Item names and lore still
 change only when troll items are newly issued.
 
-## Supported Builds
+## Universal Build
 
-The release matrix remains five independently compiled jars:
+The project ships one universal jar for the complete supported matrix:
 
 | Platform | Minecraft version | API version in `plugin.yml` |
 | --- | --- | --- |
@@ -64,10 +64,14 @@ The release matrix remains five independently compiled jars:
 | Purpur | 26.1.2 | 26.1 |
 | Purpur | 26.2 | 26.2 |
 
+The universal jar compiles against the lowest supported API, Paper 26.1.1, and
+declares `api-version: '26.1'`. Its production code must use only API members
+verified across all five targets. Purpur supports Paper API plugins, so no
+platform-specific compilation or runtime adapter is required.
+
 Paper's 26.1 announcement describes the 26.1 release family. The official
 repository does not publish a standalone exact `26.1` server/API artifact, so
-the project will not claim or create an unverifiable sixth jar. The two 26.1.x
-Paper jars already use the supported `api-version: '26.1'` descriptor value.
+the project does not claim a standalone 26.1 server target.
 
 ## Verification
 
@@ -75,7 +79,9 @@ Automated tests cover component creation, default and configured durations,
 zero/default food values, permanent markers, stack metadata preservation, and
 configuration validation.
 
-Each of the five exact targets must compile separately. Manual tests on every
+The source must compile against each of the five exact API targets as a
+compatibility check, but only one normal distributable jar is produced. That
+jar must pass a startup smoke test on every target. Manual tests on every
 target cover:
 
 1. Six-tick uninterrupted main-hand and offhand eating.
@@ -86,4 +92,3 @@ target cover:
 5. Exactly one item consumed per completed use, with the remaining stack still
    edible.
 6. A previously marked stack gaining the new native behavior.
-
