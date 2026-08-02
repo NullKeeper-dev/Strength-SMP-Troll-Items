@@ -11,7 +11,7 @@
 
 | Resizing Sword | Spooky Crossbow | Hungry Berry |
 | --- | --- | --- |
-| Grow any living entity by `0.05`, or sneak-hit to shrink it. | Every eligible player hit summons five additional persistent Ravagers. | Permanently converts the target's complete held stack into instant right-click food. |
+| Grow any living entity by `0.05`, or sneak-hit to shrink it. | Every eligible player hit summons five additional persistent Ravagers. | Permanently converts the target's complete held stack into six-tick hold-to-eat food. |
 
 ## See it in action
 
@@ -31,8 +31,9 @@ the world until killed.
 
 ### Eat any item
 
-Converted stacks keep their material and metadata. Right-click instantly
-consumes one item with zero nutrition or saturation by default.
+Converted stacks keep their material and metadata. Hold right-click for six
+ticks (0.3 seconds) to consume one item with zero nutrition or saturation by
+default. Releasing early cancels consumption.
 
 ![Hungry Berry demonstration](INSERT IMAGE LINK HERE)
 
@@ -43,21 +44,23 @@ Inspired by [Strength SMP VS Admin Items](https://youtu.be/OSGbr1bcNb8?si=KAaJoD
 ## Install
 
 1. Install Java 25 and a matching [Paper](https://papermc.io/downloads/paper) or [Purpur](https://purpurmc.org/download/purpur) server.
-2. Download the plugin from **INSERT MODRINTH LINK HERE** and choose the jar matching both the server platform and exact Minecraft version.
+2. Download the universal plugin jar from **INSERT MODRINTH LINK HERE**.
 3. Place that jar in the server's `plugins/` folder and start the server.
 4. Adjust `plugins/StrengthSmpTrollItems/config.yml` if desired, then run `/trollitems reload`.
 
-| Platform | Minecraft | Jar suffix |
-| --- | --- | --- |
-| Paper | 26.1.1 | `paper-26.1.1` |
-| Paper | 26.1.2 | `paper-26.1.2` |
-| Paper | 26.2 | `paper-26.2` |
-| Purpur | 26.1.2 | `purpur-26.1.2` |
-| Purpur | 26.2 | `purpur-26.2` |
+The same jar supports every target below:
 
-Paper 26.1, Purpur 26.1, and Purpur 26.1.1 are unavailable upstream and are
-not release targets. Spigot and CraftBukkit are not supported. There is no
-universal jar and there are no runtime dependencies.
+| Platform | Minecraft |
+| --- | --- |
+| Paper | 26.1.1 |
+| Paper | 26.1.2 |
+| Paper | 26.2 |
+| Purpur | 26.1.2 |
+| Purpur | 26.2 |
+
+Standalone Paper 26.1, Purpur 26.1, and Purpur 26.1.1 are unavailable upstream
+and are not release targets. Spigot and CraftBukkit are not supported. The
+universal jar has no runtime dependencies.
 
 ## Use
 
@@ -102,15 +105,10 @@ Install JDK 25, then run:
 .\gradlew.bat clean build verifyDistributables
 ```
 
-The build writes these five jars to `build/libs/`:
-
-- `strength-smp-troll-items-<version>-paper-26.1.1.jar`
-- `strength-smp-troll-items-<version>-paper-26.1.2.jar`
-- `strength-smp-troll-items-<version>-paper-26.2.jar`
-- `strength-smp-troll-items-<version>-purpur-26.1.2.jar`
-- `strength-smp-troll-items-<version>-purpur-26.2.jar`
-
-No universal or sources jar is produced.
+The build writes one universal jar to
+`build/libs/strength-smp-troll-items-2.0.0.jar`. The same build compiles the
+source against all five supported APIs as compatibility checks. No sources jar
+is produced.
 
 </details>
 
@@ -124,7 +122,7 @@ world behavior need three real clients. Fully test Paper 26.1.1 and Purpur
 2. Confirm five more Ravagers per eligible hit, restart persistence, normal world behavior, target-only player damage, and permanent removal when killed.
 3. Confirm sword and berry activate against armored, Resistance-protected Survival players even when final damage is zero.
 4. Confirm Creative, Spectator, invulnerable, protection-cancelled, zero-raw-damage, and immunity-window hits do not activate.
-5. Confirm scale persistence and complete-stack edible conversion with instant right-click consumption.
+5. Confirm scale persistence and complete-stack edible conversion; hold right-click for six ticks to eat exactly one at full hunger, and confirm early release consumes nothing and usable items do not perform their original action.
 
 ---
 

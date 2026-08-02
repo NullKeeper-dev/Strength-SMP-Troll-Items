@@ -2,6 +2,21 @@
 
 All notable changes to Strength SMP Troll Items are documented here.
 
+## [2.0.0]
+
+### Changed
+
+- Hungry Berry conversions now use Minecraft's native food and consumable
+  components with a six-tick eating time by default.
+- Players must keep holding right-click; releasing early or changing the active
+  item cancels consumption through the native item-use lifecycle.
+- Converted items remain edible at full hunger, use configurable nutrition and
+  saturation, and suppress their original right-click action.
+- Previously marked stacks receive current native components before use.
+- Five platform/version-classified artifacts are replaced by one universal jar
+  compiled against Paper 26.1.1 and compatibility-checked against all five
+  supported Paper/Purpur APIs.
+
 ## [1.0.0]
 
 ### Changed
