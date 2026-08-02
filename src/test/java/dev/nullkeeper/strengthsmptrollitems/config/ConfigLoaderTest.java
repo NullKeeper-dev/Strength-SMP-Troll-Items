@@ -32,7 +32,7 @@ class ConfigLoaderTest {
         assertEquals(20, config.ravagers().retargetIntervalTicks());
         assertEquals(0, config.edible().nutrition());
         assertEquals(0.0F, config.edible().saturation());
-        assertEquals(0, config.edible().consumeDelayTicks());
+        assertEquals(6, config.edible().consumeDelayTicks());
         assertEquals("&e&lResizing Sword", config.items().get(TrollItemType.RESIZING_SWORD).name());
         assertEquals(2, config.items().get(TrollItemType.HUNGRY_BERRY).lore().size());
         assertEquals("&e{target}'s size is now {size}", config.messages().resizeSuccess());
@@ -45,6 +45,7 @@ class ConfigLoaderTest {
         assertEquals(0.05, config.resize().step());
         assertEquals(5, config.ravagers().perHit());
         assertEquals(0, config.edible().nutrition());
+        assertEquals(6, config.edible().consumeDelayTicks());
         assertEquals("&5&lSpooky Crossbow", config.items().get(TrollItemType.SPOOKY_CROSSBOW).name());
     }
 

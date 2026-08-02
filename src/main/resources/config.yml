@@ -26,7 +26,7 @@ ravagers:
 edible:
   nutrition: 0
   saturation: 0.0
-  consume-delay-ticks: 0
+  consume-delay-ticks: 6
 
 messages:
   no-permission: "&cYou do not have permission to use this command."

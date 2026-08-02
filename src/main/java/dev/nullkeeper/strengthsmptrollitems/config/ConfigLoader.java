@@ -103,7 +103,7 @@ public final class ConfigLoader {
         requireRange("edible.nutrition", nutrition, 0, 20);
         double saturationValue = decimal(root, "edible.saturation", 0.0);
         requireFiniteRange("edible.saturation", saturationValue, 0.0, Float.MAX_VALUE, true);
-        int consumeTicks = integer(root, "edible.consume-delay-ticks", 0);
+        int consumeTicks = integer(root, "edible.consume-delay-ticks", 6);
         requireRange("edible.consume-delay-ticks", consumeTicks, 0, 72000);
 
         PluginConfig loaded = new PluginConfig(
