@@ -90,6 +90,7 @@ class ConfigLoaderTest {
                 Arguments.of("ravagers.speed-level", 0),
                 Arguments.of("ravagers.speed-level", 256),
                 Arguments.of("ravagers.spawn-radius", 0.0),
+                Arguments.of("ravagers.spawn-radius", 65.0),
                 Arguments.of("ravagers.retarget-interval-ticks", 0),
                 Arguments.of("edible.nutrition", -1),
                 Arguments.of("edible.nutrition", 21),

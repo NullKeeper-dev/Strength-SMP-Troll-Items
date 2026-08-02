@@ -379,17 +379,17 @@ git commit -m "Add hungry berry item conversion"
 - Produces: `ProjectileHitTracker.markFirst(Projectile, UUID)` using projectile PDC so the ledger has the projectile's lifecycle and cannot leak a global UUID set.
 - Produces: `RavagerSpawner.spawn(Player shooter, Player target, PluginConfig.RavagerSettings)` returning `SpawnResult(int requested, int spawned)`.
 
-- [ ] **Step 1: Write failing policy and metadata tests**
+- [x] **Step 1: Write failing policy and metadata tests**
 
 Prove only shooter/target can observe, interact, or damage; only target may receive Ravager damage; malformed/missing UUID metadata returns empty; valid metadata survives entity serialization; registry snapshots cannot be mutated.
 
-- [ ] **Step 2: Run tests and confirm red**
+- [x] **Step 2: Run tests and confirm red**
 
 Run: `./gradlew test --tests "*.RavagerAccessPolicyTest" --tests "*.RavagerMetadataStoreTest"`
 
 Expected: compilation fails because Ravager state classes do not exist.
 
-- [ ] **Step 3: Implement state and safe spawning**
+- [x] **Step 3: Implement state and safe spawning**
 
 Choose nearby solid-ground positions inside the configured radius without loading new chunks. Spawn with `CreatureSpawnEvent.SpawnReason.CUSTOM`; set persistent, `removeWhenFarAway(false)`, `collidable(false)`, permanent Speed effect at configured level, shooter/target metadata, and registry membership. Continue after an individual cancelled spawn and return the partial count.
 
@@ -409,11 +409,11 @@ metadata.write(ravager, new RavagerAssignment(shooter.getUniqueId(), target.getU
 registry.register(ravager);
 ```
 
-- [ ] **Step 4: Write failing crossbow tests**
+- [x] **Step 4: Write failing crossbow tests**
 
 Cover marked-crossbow projectile tagging, unmarked no-op, player victim only, cancelled/no-final-damage no-op, five default spawns, five additional spawns on a second hit, one group per projectile/victim, different shooter assignments, and partial-spawn reporting.
 
-- [ ] **Step 5: Implement projectile trigger and target controller**
+- [x] **Step 5: Implement projectile trigger and target controller**
 
 Tag the projectile in `EntityShootBowEvent`. In positive uncancelled projectile damage, use `ProjectileHitTracker.markFirst(projectile, victimId)` before spawning; serialize the already-hit victim UUIDs in that projectile's PDC. On each protected task run, set the assigned player only when online, alive, same-world, and within the Ravager's current `FOLLOW_RANGE`; otherwise clear the live AI target while retaining metadata.
 
@@ -425,7 +425,7 @@ if (eligible(ravager, target, followRange(ravager))) {
 }
 ```
 
-- [ ] **Step 6: Test and commit**
+- [x] **Step 6: Test and commit**
 
 Run: `./gradlew test --tests "*.ravager.*"`
 

@@ -95,7 +95,7 @@ public final class ConfigLoader {
         int speedLevel = integer(root, "ravagers.speed-level", 2);
         requireRange("ravagers.speed-level", speedLevel, 1, 255);
         double spawnRadius = decimal(root, "ravagers.spawn-radius", 6.0);
-        requireFiniteRange("ravagers.spawn-radius", spawnRadius, 0.0, Double.MAX_VALUE, false);
+        requireFiniteRange("ravagers.spawn-radius", spawnRadius, 0.0, 64.0, false);
         int retargetTicks = integer(root, "ravagers.retarget-interval-ticks", 20);
         requireRange("ravagers.retarget-interval-ticks", retargetTicks, 1, 1200);
 
