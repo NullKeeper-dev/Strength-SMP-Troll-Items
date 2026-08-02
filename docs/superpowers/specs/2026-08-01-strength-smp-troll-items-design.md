@@ -13,8 +13,8 @@ Items](https://youtu.be/OSGbr1bcNb8), and credits the creator's
 
 The plugin provides administrator commands for issuing the items and a YAML
 configuration for changing item presentation, messages, and balance values.
-The design favors native server behavior, persistent item/entity state, and a
-single Paper-compatible jar for Paper and Purpur.
+The design favors native server behavior, persistent item/entity state, and
+target-specific Paper/Purpur jars.
 
 ## 2. Supported Environment
 

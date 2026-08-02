@@ -496,15 +496,15 @@ git commit -m "Build five Paper and Purpur targets"
 - `CHANGELOG.md` contains one pending `1.0.0` section plus historical `0.1.0`.
 - Each matching jar must enable without linkage or missing-dependency errors on its target server.
 
-- [ ] **Step 1: Finish README platform and behavior documentation**
+- [x] **Step 1: Finish README platform and behavior documentation**
 
 Replace Bukkit/Spigot badges and wording with Paper/Purpur. Remove every ProtocolLib installation/download instruction. The Install section must tell users to choose the jar matching their platform and exact version. Document the five supported combinations, the unavailable combinations, accepted Ravager sound leakage, valid damage-tick behavior, and the WorldGuard/protection-plugin cancellation behavior. Preserve the original video and creator links.
 
-- [ ] **Step 2: Audit the pending release notes**
+- [x] **Step 2: Audit the pending release notes**
 
 Ensure `## [1.0.0]` describes the entire unreleased change: Paper/Purpur-only breaking support, five separate jars, no ProtocolLib, native Ravager visual privacy with sound limitation, and zero-final-damage valid tick behavior. Keep the historical `## [0.1.0] - 2026-08-01` entry unchanged.
 
-- [ ] **Step 3: Run final automated verification**
+- [x] **Step 3: Run final automated verification**
 
 Run:
 
@@ -516,7 +516,7 @@ rg -n "ProtocolLib|Spigot|CraftBukkit" build.gradle.kts src README.md CHANGELOG.
 
 Expected: build and all tests pass; exactly five jars exist; remaining README/changelog mentions of Spigot/CraftBukkit only explain that they are unsupported; no ProtocolLib references remain in build, production, descriptor, tests, or install instructions.
 
-- [ ] **Step 4: Run the five-server startup matrix**
+- [x] **Step 4: Run the five-server startup matrix**
 
 Use ignored directories under `run/compatibility/`. Download the newest build matching each pinned target from these official endpoints:
 
@@ -532,7 +532,7 @@ For Paper, select build IDs `29`, `74`, and `87` respectively and download each 
 
 Expected for each target: the server reaches `Done`; Strength SMP Troll Items `1.0.0` enables; no `UnknownDependencyException`, `NoClassDefFoundError`, `NoSuchMethodError`, or linkage failure appears. Treat any target failure as a release blocker and fix/rebuild only after analyzing its exact log.
 
-- [ ] **Step 5: Record the three-player manual handoff**
+- [x] **Step 5: Record the three-player manual handoff**
 
 Report that startup smoke tests do not replace the live gameplay matrix. Give the human these exact checks on at least Paper 26.1.1 and Purpur 26.2, followed by smoke repetition on the other three targets:
 
@@ -542,11 +542,11 @@ Report that startup smoke tests do not replace the live gameplay matrix. Give th
 4. Confirm Creative, Spectator, invulnerable targets, cancelled WorldGuard hits, zero-raw-damage events, and repeated swings during no-damage ticks do not trigger.
 5. Confirm scale persistence and complete-stack edible conversion/instant consumption remain unchanged.
 
-- [ ] **Step 6: Run the per-edit security and repository checks**
+- [x] **Step 6: Run the per-edit security and repository checks**
 
 Scan only files changed by this implementation for private keys, tokens, credentials, or local absolute paths. Confirm no new tracked file type lacks `.gitignore` coverage. Verify `run/`, `build/`, and `.gradle/` remain ignored. Leave `Prompt.txt` untouched and untracked.
 
-- [ ] **Step 7: Review the full unreleased diff and commit final documentation**
+- [x] **Step 7: Review the full unreleased diff and commit final documentation**
 
 Review from `f08885d` through the working tree against both approved specs. Fix all critical/high correctness, security, performance, build-matrix, and documentation findings, then rerun `.\gradlew.bat clean build verifyDistributables`.
 
@@ -557,6 +557,6 @@ git add README.md CHANGELOG.md docs/superpowers/specs docs/superpowers/plans/202
 git commit -m "Document Paper and Purpur release matrix"
 ```
 
-- [ ] **Step 8: Final handoff**
+- [x] **Step 8: Final handoff**
 
 Report the five jar paths, test counts, startup-smoke results per target, any manual multiplayer checks still outstanding, the accepted Ravager sound limitation, ProtocolLib removal, compatibility risks in `RavagerVisibilityService.apply` and the MONITOR damage listeners, and the final clean/dirty Git status excluding the user's `Prompt.txt`.
